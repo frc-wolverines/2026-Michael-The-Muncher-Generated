@@ -4,6 +4,7 @@ import com.ctre.phoenix6.configs.AudioConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.configs.VoltageConfigs;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 public class Configs {
@@ -23,4 +24,9 @@ public class Configs {
         .withMotorOutput(
             new MotorOutputConfigs()
                 .withNeutralMode(NeutralModeValue.Brake));
+
+    public static final TalonFXConfiguration INTAKE_MOTOR_CONFIGURATION = new TalonFXConfiguration()
+        .withMotorOutput(
+            new MotorOutputConfigs()
+                .withNeutralMode(NeutralModeValue.Coast));
 }

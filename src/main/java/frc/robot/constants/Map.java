@@ -5,4 +5,5 @@ public class Map {
     public static final int TURRET_AZIMUTH = 14;
     
     public static final int INTAKE_PIVOT = 15;
+    public static final int INTAKE_MOTOR = 16;
 }

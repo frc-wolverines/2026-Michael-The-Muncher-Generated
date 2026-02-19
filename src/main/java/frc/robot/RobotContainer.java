@@ -68,32 +68,24 @@ public class RobotContainer {
 
         intake.setDefaultCommand(intake.getDutyCycleCommand(extraDebugJoystick::getRightY, () -> 0.0));
 
-        // drivetrain.setDefaultCommand(
-        //     drivetrain.applyRequest(() ->
-        //         drive.withVelocityX(-joystick.getLeftY() * MaxSpeed * 0.65) // Drive forward with negative Y (forward)
-        //             .withVelocityY(-joystick.getLeftX() * MaxSpeed * 0.65) // Drive left with negative X (left)
-        //             .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
-        //     )
-        // );
-
-        // final var idle = new SwerveRequest.Idle();
-        // RobotModeTriggers.disabled().whileTrue(
-        //     drivetrain.applyRequest(() -> idle).ignoringDisable(true)
-        // );
-
-        // joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-        // joystick.b().whileTrue(drivetrain.applyRequest(() ->
-        //     point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))
-        // ));
-
-        // joystick.back().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-        // joystick.back().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        // joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        // joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
-
-        // joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
         drivetrain.registerTelemetry(logger::telemeterize);
+    }
+
+    private void setupDrivetrain() {
+        drivetrain.setDefaultCommand(
+            drivetrain.applyRequest(() ->
+                drive.withVelocityX(-joystick.getLeftY() * MaxSpeed * 0.65) // Drive forward with negative Y (forward)
+                    .withVelocityY(-joystick.getLeftX() * MaxSpeed * 0.65) // Drive left with negative X (left)
+                    .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+            )
+        );
+
+        final var idle = new SwerveRequest.Idle();
+        RobotModeTriggers.disabled().whileTrue(
+            drivetrain.applyRequest(() -> idle).ignoringDisable(true)
+        );
     }
 
     public Command getAutonomousCommand() {
