@@ -57,7 +57,7 @@ public class Intake extends SubsystemBase {
     }
 
     public Command getStateCommand(Supplier<IntakeState> stateSupplier) {
-        return Commands.empty(this);
+        return Commands.
     }
 
     private static Intake _instance;
