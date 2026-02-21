@@ -13,6 +13,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.event.NetworkBooleanEvent;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -26,15 +27,15 @@ public class Intake extends SubsystemBase {
     private final TalonFX intakePivot;
     private final PIDController intakePivotController = new PIDController(Tunables.INTAKE_PIVOT_PID_CONSTANTS.kP, Tunables.INTAKE_PIVOT_PID_CONSTANTS.kI, Tunables.INTAKE_PIVOT_PID_CONSTANTS.kD);
 
-    private final TalonFX intakeMotor;
+    private final TalonFX intakeRollers;
     
     public Intake() {
         intakePivot = new TalonFX(Map.INTAKE_PIVOT);
         intakePivot.getConfigurator().apply(Configs.INTAKE_PIVOT_CONFIGURATION);
         intakePivot.setPosition(0);
 
-        intakeMotor = new TalonFX(Map.INTAKE_MOTOR);
-        intakeMotor.getConfigurator().apply(Configs.INTAKE_MOTOR_CONFIGURATION);
+        intakeRollers = new TalonFX(Map.INTAKE_ROLLERS);
+        intakeRollers.getConfigurator().apply(Configs.INTAKE_ROLLERS_CONFIGURATION);
     }
 
     public Rotation2d getIntakeRotation() {
@@ -44,20 +45,30 @@ public class Intake extends SubsystemBase {
     @Override
     public void periodic() {
         SmartDashboard.putNumber("Intake/Pivot Angle Degrees", getIntakeRotation().getDegrees());
+        SmartDashboard.putNumber("Intake/Roller Current Stator", intakeRollers.getStatorCurrent().getValueAsDouble());
+        SmartDashboard.putNumber("Intake/Roller Voltage", intakeRollers.getMotorVoltage().getValueAsDouble());
         SmartDashboard.putData(this);
     }
 
     public Command getDutyCycleCommand(Supplier<Double> pivotDutyCycleSupplier, Supplier<Double> intakeDutyCycleSupplier) {
         return Commands.runEnd(() -> {
             intakePivot.setControl(new DutyCycleOut(pivotDutyCycleSupplier.get()));
-            intakeMotor.setControl(new DutyCycleOut(intakeDutyCycleSupplier.get()));
+            intakeRollers.setControl(new VoltageOut(intakeDutyCycleSupplier.get() * 10));
         }, () -> {
             intakePivot.setControl(new NeutralOut());
+            intakeRollers.setControl(new NeutralOut());
         }, this);
     }
 
     public Command getStateCommand(Supplier<IntakeState> stateSupplier) {
-        return Commands.
+        return Commands.runEnd(() -> {
+            IntakeState state = stateSupplier.get();
+            intakePivot.setControl(new DutyCycleOut(intakePivotController.calculate(getIntakeRotation().getRotations(), state.rotation().getRotations())));
+            intakeRollers.setControl(new VoltageOut(state.voltage()));
+        }, () -> {
+            intakePivot.setControl(new NeutralOut());
+            intakeRollers.setControl(new NeutralOut());
+        }, this);
     }
 
     private static Intake _instance;

@@ -1,6 +1,7 @@
 package frc.robot.constants;
 
 import com.ctre.phoenix6.configs.AudioConfigs;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -23,9 +24,13 @@ public class Configs {
                 .withSensorToMechanismRatio(TrueConstants.INTAKE_PIVOT_GEAR_RATIO))
         .withMotorOutput(
             new MotorOutputConfigs()
-                .withNeutralMode(NeutralModeValue.Brake));
+                .withNeutralMode(NeutralModeValue.Brake))
+        .withCurrentLimits(
+            new CurrentLimitsConfigs()
+                .withStatorCurrentLimit(15)
+                .withStatorCurrentLimitEnable(true));
 
-    public static final TalonFXConfiguration INTAKE_MOTOR_CONFIGURATION = new TalonFXConfiguration()
+    public static final TalonFXConfiguration INTAKE_ROLLERS_CONFIGURATION = new TalonFXConfiguration()
         .withMotorOutput(
             new MotorOutputConfigs()
                 .withNeutralMode(NeutralModeValue.Coast));

@@ -7,11 +7,14 @@ package frc.robot;
 import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.fasterxml.jackson.core.io.IOContext;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.FollowPathCommand;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.Joystick.AxisType;
+import edu.wpi.first.wpilibj.XboxController.Axis;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -19,7 +22,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-
+import frc.robot.constants.Frames.IntakeState;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Intake;
@@ -41,6 +44,8 @@ public class RobotContainer {
     private final CommandXboxController joystick = new CommandXboxController(0);
     private final CommandXboxController extraDebugJoystick = new CommandXboxController(1);
 
+    private final SendableChooser<Boolean> maintananceMode = new SendableChooser<>();
+
 
     public final Drivetrain drivetrain = Drivetrain.getInstance();
     // public final Turret turret = Turret.getInstance();
@@ -52,6 +57,11 @@ public class RobotContainer {
     public RobotContainer() {
         autoChooser = AutoBuilder.buildAutoChooser("Tests");
         SmartDashboard.putData("Auto Mode", autoChooser);
+        SmartDashboard.putData("Maintanance Mode", maintananceMode);
+
+        maintananceMode.addOption("False", false);
+        maintananceMode.setDefaultOption("False", false);
+        maintananceMode.addOption("True", true);
 
         configureBindings();
 
@@ -66,9 +76,15 @@ public class RobotContainer {
         // extraDebugJoystick.y().onTrue(turret.getTurnToFieldRelativeAngle(Rotation2d.fromDegrees(180)));  
         // extraDebugJoystick.x().onTrue(turret.getTurnToFieldRelativeAngle(Rotation2d.fromDegrees(270)));  
 
-        intake.setDefaultCommand(intake.getDutyCycleCommand(extraDebugJoystick::getRightY, () -> 0.0));
+        intake.setDefaultCommand(
+            intake.getStateCommand(() -> {
+                return new IntakeState(Rotation2d.fromDegrees(extraDebugJoystick.getLeftTriggerAxis() > 0.1 ? 90 : 0.0), extraDebugJoystick.getLeftTriggerAxis() > 0.1 ? -10 : 0.0);
+            })
+        );
+
 
         joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        // setupDrivetrain();
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }
