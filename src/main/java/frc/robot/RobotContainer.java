@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.constants.Frames.IntakeState;
 import frc.robot.generated.TunerConstants;
@@ -43,6 +44,7 @@ public class RobotContainer {
 
     private final CommandXboxController joystick = new CommandXboxController(0);
     private final CommandXboxController extraDebugJoystick = new CommandXboxController(1);
+    private final Trigger intakeTrigger = new Trigger(() -> extraDebugJoystick.getLeftTriggerAxis() > 0.1);
 
     private final SendableChooser<Boolean> maintananceMode = new SendableChooser<>();
 
@@ -76,12 +78,7 @@ public class RobotContainer {
         // extraDebugJoystick.y().onTrue(turret.getTurnToFieldRelativeAngle(Rotation2d.fromDegrees(180)));  
         // extraDebugJoystick.x().onTrue(turret.getTurnToFieldRelativeAngle(Rotation2d.fromDegrees(270)));  
 
-        intake.setDefaultCommand(
-            intake.getStateCommand(() -> {
-                return new IntakeState(Rotation2d.fromDegrees(extraDebugJoystick.getLeftTriggerAxis() > 0.1 ? 90 : 0.0), extraDebugJoystick.getLeftTriggerAxis() > 0.1 ? -10 : 0.0);
-            })
-        );
-
+        intakeTrigger.whileTrue(intake.down());
 
         joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
         // setupDrivetrain();
