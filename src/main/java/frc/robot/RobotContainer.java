@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.constants.Frames.IntakeState;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Drivetrain;
+import frc.robot.subsystems.Feeder;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Turret;
 
@@ -50,6 +51,7 @@ public class RobotContainer {
     public final Drivetrain drivetrain = Drivetrain.getInstance();
     // public final Turret turret = Turret.getInstance();
     public final Intake intake = Intake.getInstance();
+    public final Feeder feeder = Feeder.getInstance();
 
     private final SendableChooser<Command> autoChooser;
 
@@ -62,6 +64,9 @@ public class RobotContainer {
         maintananceMode.addOption("False", false);
         maintananceMode.setDefaultOption("False", false);
         maintananceMode.addOption("True", true);
+        maintananceMode.onChange(value -> {
+            intake.setMaintananceMode(value);
+        });
 
         configureBindings();
 
@@ -74,13 +79,20 @@ public class RobotContainer {
         // extraDebugJoystick.a().onTrue(turret.getTurnToFieldRelativeAngle(Rotation2d.fromDegrees(0)));  
         // extraDebugJoystick.b().onTrue(turret.getTurnToFieldRelativeAngle(Rotation2d.fromDegrees(90)));  
         // extraDebugJoystick.y().onTrue(turret.getTurnToFieldRelativeAngle(Rotation2d.fromDegrees(180)));  
-        // extraDebugJoystick.x().onTrue(turret.getTurnToFieldRelativeAngle(Rotation2d.fromDegrees(270)));  
-
-        intake.setDefaultCommand(
-            intake.getStateCommand(() -> {
-                return new IntakeState(Rotation2d.fromDegrees(extraDebugJoystick.getLeftTriggerAxis() > 0.1 ? 90 : 0.0), extraDebugJoystick.getLeftTriggerAxis() > 0.1 ? -10 : 0.0);
-            })
+        // extraDebugJoystick.x().onTrue(turret.getTurnToFieldRelativeAngle(Rotation2d.fromDegrees(270))); 
+        
+        feeder.setDefaultCommand(
+            feeder.getDutyCycleCommand(
+                () -> extraDebugJoystick.getRightTriggerAxis(),
+                () -> extraDebugJoystick.getRightTriggerAxis()
+            )
         );
+
+        // intake.setDefaultCommand(
+        //     intake.getStateCommand(() -> {
+        //         return new IntakeState(Rotation2d.fromDegrees(extraDebugJoystick.getLeftTriggerAxis() > 0.1 ? 90 : 0.0), extraDebugJoystick.getLeftTriggerAxis() > 0.1 ? -10 : 0.0);
+        //     })
+        // );
 
 
         joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));

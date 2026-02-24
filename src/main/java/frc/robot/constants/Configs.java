@@ -19,9 +19,6 @@ public class Configs {
         );
 
     public static final TalonFXConfiguration INTAKE_PIVOT_CONFIGURATION = new TalonFXConfiguration()
-        .withFeedback(
-            new FeedbackConfigs()
-                .withSensorToMechanismRatio(TrueConstants.INTAKE_PIVOT_GEAR_RATIO))
         .withMotorOutput(
             new MotorOutputConfigs()
                 .withNeutralMode(NeutralModeValue.Brake))
@@ -34,4 +31,16 @@ public class Configs {
         .withMotorOutput(
             new MotorOutputConfigs()
                 .withNeutralMode(NeutralModeValue.Coast));
+
+    public static final TalonFXConfiguration HOTDOG_FEEDER_CONFIGURATION = new TalonFXConfiguration()
+        .withMotorOutput(
+            new MotorOutputConfigs()
+                .withNeutralMode(NeutralModeValue.Coast)
+        );
+
+    public static final TalonFXConfiguration TOWER_FEEDER_CONFIGURATION = new TalonFXConfiguration()
+        .withMotorOutput(
+            new MotorOutputConfigs()
+                .withNeutralMode(NeutralModeValue.Coast)
+        );
 }

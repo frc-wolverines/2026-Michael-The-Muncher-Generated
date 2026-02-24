@@ -6,4 +6,7 @@ public class Map {
 
     public static final int INTAKE_PIVOT = 15;
     public static final int INTAKE_ROLLERS = 16;
+
+    public static final int HOTDOG_FEEDER = 17;
+    public static final int TOWER_FEEDER = 18;
 }
