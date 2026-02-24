@@ -12,7 +12,7 @@ public class Configs {
     public static final TalonFXConfiguration TURRET_AZIMUTH_CONFIGURATION = new TalonFXConfiguration()
         .withFeedback(
             new FeedbackConfigs()
-                .withSensorToMechanismRatio(TrueConstants.TURRET_AZIMUTH_GEAR_RATIO))
+                .withSensorToMechanismRatio(Constraints.TURRET_AZIMUTH_GEAR_RATIO))
         .withMotorOutput(
             new MotorOutputConfigs()
                 .withNeutralMode(NeutralModeValue.Coast)

@@ -44,6 +44,8 @@ public class Intake extends SubsystemBase {
 
         intakeRollers = new TalonFX(Map.INTAKE_ROLLERS);
         intakeRollers.getConfigurator().apply(Configs.INTAKE_ROLLERS_CONFIGURATION);
+
+        setDefaultCommand(idle());
     }
 
     public Rotation2d getIntakeRotation() {
@@ -58,7 +60,7 @@ public class Intake extends SubsystemBase {
         SmartDashboard.putData(this);
     }
 
-    public Command getDutyCycleCommand(Supplier<Double> pivotDutyCycleSupplier, Supplier<Double> intakeDutyCycleSupplier) {
+    private Command getDutyCycleCommand(Supplier<Double> pivotDutyCycleSupplier, Supplier<Double> intakeDutyCycleSupplier) {
         return Commands.runEnd(() -> {
             intakePivot.setControl(new DutyCycleOut(pivotDutyCycleSupplier.get()));
             intakeRollers.setControl(new VoltageOut(intakeDutyCycleSupplier.get() * 10));
@@ -68,15 +70,34 @@ public class Intake extends SubsystemBase {
         }, this);
     }
 
-    public Command getStateCommand(Supplier<IntakeState> stateSupplier) {
+    private Command getStateCommand(IntakeState state) {
         return Commands.runEnd(() -> {
-            IntakeState state = stateSupplier.get();
             intakePivot.setControl(new DutyCycleOut(intakePivotController.calculate(getIntakeRotation().getRotations(), state.rotation().getRotations())));
             intakeRollers.setControl(new VoltageOut(state.voltage()));
         }, () -> {
             intakePivot.setControl(new NeutralOut());
             intakeRollers.setControl(new NeutralOut());
         }, this);
+    }
+
+    public Command idle() {
+        return Commands.runEnd(() -> {}, () -> {}, this);
+    }
+
+    public Command agitate() {
+        return Commands.run(() -> {}, this)
+            .withTimeout(0.5)
+            .andThen(Commands.run(() -> {}, this))
+            .withTimeout(0.5).repeatedly().finallyDo(() -> {});
+    }
+
+    public Command down() {
+        return getStateCommand(Tunables.INTAKE_DOWN_STATE);
+    }
+
+    public void stop() {
+        intakePivot.setControl(new NeutralOut());
+        intakeRollers.setControl(new NeutralOut());
     }
 
     public void setMaintananceMode(boolean enabled) {
