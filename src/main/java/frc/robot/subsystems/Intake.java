@@ -73,14 +73,18 @@ public class Intake extends SubsystemBase {
     }
 
     public Command idle() {
-        return Commands.runEnd(() -> {}, () -> {}, this);
+        return getStateCommand(Tunables.INTAKE_UP_STATE);
     }
 
     public Command agitate() {
-        return Commands.run(() -> {}, this)
+        return Commands.run(() -> {
+            intakePivot.setControl(new DutyCycleOut(intakePivotController.calculate(getIntakeRotation().getRotations(), Tunables.INTAKE_UP_ROTATION.getRotations())));
+        }, this)
             .withTimeout(0.5)
-            .andThen(Commands.run(() -> {}, this))
-            .withTimeout(0.5).repeatedly().finallyDo(() -> {});
+            .andThen(Commands.run(() -> {
+                intakePivot.setControl(new DutyCycleOut(intakePivotController.calculate(getIntakeRotation().getRotations(), Tunables.INTAKE_AGITATE_ROTATION.getRotations())));
+            }, this))
+            .withTimeout(0.5).repeatedly().finallyDo(this::stop);
     }
 
     public Command down() {

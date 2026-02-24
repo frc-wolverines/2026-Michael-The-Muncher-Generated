@@ -1,15 +1,21 @@
 package frc.robot.subsystems;
 
+import java.lang.constant.DirectMethodHandleDesc;
 import java.util.function.Supplier;
+
+import javax.naming.ldap.LdapContext;
 
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Twist2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -71,13 +77,19 @@ public class Turret extends SubsystemBase {
         }, () -> turretAzimuth.setControl(new NeutralOut()), this);
     }
 
-    public Command turnToLandmark(Translation2d landmark) {
+    public Command turnToLandmark(Translation2d landmark, boolean accountForVelocity) {
         return Commands.runEnd(() -> {
+            Translation2d newLandmark = landmark;
             Drivetrain drivetrain = Drivetrain.getInstance();
-            Pose2d robotPose = drivetrain.getStateCopy().Pose;
-            Rotation2d angle = robotPose.getTranslation().minus(landmark).getAngle();
+            SwerveDriveState state = drivetrain.getStateCopy();
+            // if(accountForVelocity) {
+            //     Twist2d motion = drivetrain.getKinematics().toTwist2d(state.ModulePositions);
+            //     newLandmark = landmark.minus(new Translation2d(motion.dx, motion.dy));
+            // }
+            Pose2d robotPose = state.Pose;
+            Rotation2d angle = robotPose.getTranslation().minus(newLandmark).getAngle();
             if(fieldAngleUnachievable(angle)) return;
-            double setpoint = (drivetrain.getRotation3d().getZ() / (Math.PI * 2)) - angle.getRotations();
+            double setpoint = angle.minus(robotPose.getRotation()).getRotations();
             turretAzimuth.setControl(
                 new DutyCycleOut(
                     azimuthController.calculate(getRotation().getRotations(), setpoint)
