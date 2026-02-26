@@ -61,7 +61,6 @@ public class RobotContainer {
     public RobotContainer() {
         autoChooser = AutoBuilder.buildAutoChooser("Tests");
         SmartDashboard.putData("Auto Mode", autoChooser);
-        SmartDashboard.putData("Maintanance Mode", maintananceMode);
 
         maintananceMode.addOption("False", false);
         maintananceMode.setDefaultOption("False", false);
@@ -69,6 +68,8 @@ public class RobotContainer {
         maintananceMode.onChange(value -> {
             intake.setMaintananceMode(value);
         });
+
+        SmartDashboard.putData("Maintanance Mode", maintananceMode);
 
         configureBindings();
 

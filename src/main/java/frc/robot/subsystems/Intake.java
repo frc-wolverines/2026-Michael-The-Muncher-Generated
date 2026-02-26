@@ -23,8 +23,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.Configs;
+import frc.robot.constants.Constraints;
 import frc.robot.constants.Map;
-import frc.robot.constants.TrueConstants;
 import frc.robot.constants.Tunables;
 import frc.robot.constants.Frames.IntakeState;
 
@@ -44,12 +44,10 @@ public class Intake extends SubsystemBase {
 
         intakeRollers = new TalonFX(Map.INTAKE_ROLLERS);
         intakeRollers.getConfigurator().apply(Configs.INTAKE_ROLLERS_CONFIGURATION);
-
-        setDefaultCommand(idle());
     }
 
     public Rotation2d getIntakeRotation() {
-        return Rotation2d.fromDegrees((intakeEncoder.get() * 360) + TrueConstants.INTAKE_ENCODER_OFFSET);   
+        return Rotation2d.fromDegrees((intakeEncoder.get() * 360 - Constraints.INTAKE_ENCODER_OFFSET));   
     }
 
     @Override
