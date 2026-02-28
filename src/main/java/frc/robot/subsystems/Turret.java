@@ -33,8 +33,6 @@ public class Turret extends SubsystemBase {
         turretAzimuth = new TalonFX(Map.TURRET_AZIMUTH);
         turretAzimuth.getConfigurator().apply(Configs.TURRET_AZIMUTH_CONFIGURATION);
         turretAzimuth.setPosition(0);
-
-        azimuthController.enableContinuousInput(-360,360);
     }
 
     @Override
@@ -69,6 +67,7 @@ public class Turret extends SubsystemBase {
             if(fieldAngleUnachievable(angle)) return;
             Drivetrain drivetrain = Drivetrain.getInstance();
             double setpoint = (drivetrain.getRotation3d().getZ() / (Math.PI * 2)) - angle.getRotations();
+            setpoint = Math.max(Constraints.TURRET_MIN_ROTATION.getRotations(), Math.min(setpoint, Constraints.TURRET_MAX_ROTATION.getRotations()));
             turretAzimuth.setControl(
                 new DutyCycleOut(
                     azimuthController.calculate(getRotation().getRotations(), setpoint)

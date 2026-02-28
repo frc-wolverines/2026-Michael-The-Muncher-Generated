@@ -27,6 +27,7 @@ import frc.robot.constants.Frames.IntakeState;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Feeder;
+import frc.robot.subsystems.Flywheels;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Turret;
 
@@ -45,15 +46,15 @@ public class RobotContainer {
 
     private final CommandXboxController joystick = new CommandXboxController(0);
     private final CommandXboxController extraDebugJoystick = new CommandXboxController(1);
-    private final Trigger intakeTrigger = new Trigger(() -> extraDebugJoystick.getLeftTriggerAxis() > 0.1);
+    private final Trigger intakeTrigger = new Trigger(() -> joystick.getLeftTriggerAxis() > 0.1);
 
     private final SendableChooser<Boolean> maintananceMode = new SendableChooser<>();
 
-
     public final Drivetrain drivetrain = Drivetrain.getInstance();
-    // public final Turret turret = Turret.getInstance();
+    public final Turret turret = Turret.getInstance();
     public final Intake intake = Intake.getInstance();
     public final Feeder feeder = Feeder.getInstance();
+    public final Flywheels flywheels;
 
     private final SendableChooser<Command> autoChooser;
 
@@ -61,6 +62,9 @@ public class RobotContainer {
     public RobotContainer() {
         autoChooser = AutoBuilder.buildAutoChooser("Tests");
         SmartDashboard.putData("Auto Mode", autoChooser);
+
+        flywheels = new Flywheels();
+        drivetrain.resetRotation(Rotation2d.kZero);
 
         maintananceMode.addOption("False", false);
         maintananceMode.setDefaultOption("False", false);
@@ -78,18 +82,23 @@ public class RobotContainer {
 
     private void configureBindings() {
 
-        // turret.setDefaultCommand(turret.getDutyCycleCommand(extraDebugJoystick::getLeftY));  
+        turret.setDefaultCommand(turret.turnToFieldAngle(Rotation2d.kZero));
         // extraDebugJoystick.a().onTrue(turret.getTurnToFieldRelativeAngle(Rotation2d.fromDegrees(0)));  
         // extraDebugJoystick.b().onTrue(turret.getTurnToFieldRelativeAngle(Rotation2d.fromDegrees(90)));  
         // extraDebugJoystick.y().onTrue(turret.getTurnToFieldRelativeAngle(Rotation2d.fromDegrees(180)));  
         // extraDebugJoystick.x().onTrue(turret.getTurnToFieldRelativeAngle(Rotation2d.fromDegrees(270))); 
         
-        feeder.setDefaultCommand(
-            feeder.getDutyCycleCommand(
-                () -> extraDebugJoystick.getRightTriggerAxis(),
-                () -> extraDebugJoystick.getRightTriggerAxis()
-            )
-        );
+        // intakeTrigger.whileTrue(intake.down());
+        // feeder.setDefaultCommand(
+        //     feeder.getDutyCycleCommand(
+        //         () -> joystick.getRightTriggerAxis(),
+        //         () -> joystick.getRightTriggerAxis()
+        //     )
+        // );
+
+        flywheels.setDefaultCommand(flywheels.dutyCycle(() -> -joystick.getRightTriggerAxis() * 0.65));
+        joystick.b().onTrue(flywheels.dutyCycle(() -> 0.0));
+        joystick.a().onTrue(flywheels.velocity(() -> Rotation2d.fromRotations(-25)));
 
         // intake.setDefaultCommand(
         //     intake.getStateCommand(() -> {
@@ -99,7 +108,7 @@ public class RobotContainer {
 
 
         joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
-        // setupDrivetrain();
+        setupDrivetrain();
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }

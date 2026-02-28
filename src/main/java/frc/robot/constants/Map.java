@@ -9,4 +9,7 @@ public class Map {
 
     public static final int HOTDOG_FEEDER = 17;
     public static final int TOWER_FEEDER = 18;
+
+    public static final int LEFT_FLYWHEEL = 19;
+    public static final int RIGHT_FLYWHEEL = 20;
 }

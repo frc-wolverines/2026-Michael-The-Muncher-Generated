@@ -14,6 +14,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
@@ -32,6 +33,7 @@ public class Intake extends SubsystemBase {
     private final TalonFX intakePivot;
     private final PIDController intakePivotController = new PIDController(Tunables.INTAKE_PIVOT_PID_CONSTANTS.kP, Tunables.INTAKE_PIVOT_PID_CONSTANTS.kI, Tunables.INTAKE_PIVOT_PID_CONSTANTS.kD);
     private final DutyCycleEncoder intakeEncoder;
+    private final SlewRateLimiter rollerAccelLimiter = new SlewRateLimiter(10);
 
     private final TalonFX intakeRollers;
     
@@ -44,6 +46,8 @@ public class Intake extends SubsystemBase {
 
         intakeRollers = new TalonFX(Map.INTAKE_ROLLERS);
         intakeRollers.getConfigurator().apply(Configs.INTAKE_ROLLERS_CONFIGURATION);
+
+        // setDefaultCommand(idle());
     }
 
     public Rotation2d getIntakeRotation() {
@@ -71,7 +75,7 @@ public class Intake extends SubsystemBase {
     private Command getStateCommand(IntakeState state) {
         return Commands.runEnd(() -> {
             intakePivot.setControl(new DutyCycleOut(intakePivotController.calculate(getIntakeRotation().getRotations(), state.rotation().getRotations())));
-            intakeRollers.setControl(new VoltageOut(state.voltage()));
+            intakeRollers.setControl(new VoltageOut(rollerAccelLimiter.calculate(state.voltage().baseUnitMagnitude())));
         }, () -> {
             intakePivot.setControl(new NeutralOut());
             intakeRollers.setControl(new NeutralOut());

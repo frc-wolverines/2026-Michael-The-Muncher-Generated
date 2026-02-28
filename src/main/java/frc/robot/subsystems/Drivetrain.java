@@ -60,7 +60,6 @@ public class Drivetrain extends TunerSwerveDrivetrain implements Subsystem {
 
     private final Field2d field2d = new Field2d();
 
-
     /* SysId routine for characterizing translation. This is used to find PID gains for the drive motors. */
     private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
         new SysIdRoutine.Config(
@@ -203,6 +202,7 @@ public class Drivetrain extends TunerSwerveDrivetrain implements Subsystem {
     }
 
     private void configureAutoBuilder() {
+        SmartDashboard.putData(field2d);
         try {
             var config = RobotConfig.fromGUISettings();
             AutoBuilder.configure(
@@ -263,9 +263,12 @@ public class Drivetrain extends TunerSwerveDrivetrain implements Subsystem {
         return m_sysIdRoutineToApply.dynamic(direction);
     }
 
+    public void updateField() {
+        field2d.setRobotPose(getStateCopy().Pose);
+    }
+
     @Override
     public void periodic() {
-
         /*
          * Periodically try to apply the operator perspective.
          * If we haven't applied the operator perspective before, then we should apply it regardless of DS state.
@@ -273,6 +276,7 @@ public class Drivetrain extends TunerSwerveDrivetrain implements Subsystem {
          * Otherwise, only check and apply the operator perspective if the DS is disabled.
          * This ensures driving behavior doesn't change until an explicit disable event occurs during testing.
          */
+
         if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
             DriverStation.getAlliance().ifPresent(allianceColor -> {
                 setOperatorPerspectiveForward(
