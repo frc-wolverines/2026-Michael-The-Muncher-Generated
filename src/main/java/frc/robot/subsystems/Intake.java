@@ -47,7 +47,7 @@ public class Intake extends SubsystemBase {
         intakeRollers = new TalonFX(Map.INTAKE_ROLLERS);
         intakeRollers.getConfigurator().apply(Configs.INTAKE_ROLLERS_CONFIGURATION);
 
-        // setDefaultCommand(idle());
+        setDefaultCommand(idle());
     }
 
     public Rotation2d getIntakeRotation() {
@@ -75,7 +75,7 @@ public class Intake extends SubsystemBase {
     private Command getStateCommand(IntakeState state) {
         return Commands.runEnd(() -> {
             intakePivot.setControl(new DutyCycleOut(intakePivotController.calculate(getIntakeRotation().getRotations(), state.rotation().getRotations())));
-            intakeRollers.setControl(new VoltageOut(rollerAccelLimiter.calculate(state.voltage().baseUnitMagnitude())));
+            intakeRollers.setControl(new VoltageOut(state.voltage()));
         }, () -> {
             intakePivot.setControl(new NeutralOut());
             intakeRollers.setControl(new NeutralOut());
@@ -90,11 +90,11 @@ public class Intake extends SubsystemBase {
         return Commands.run(() -> {
             intakePivot.setControl(new DutyCycleOut(intakePivotController.calculate(getIntakeRotation().getRotations(), Tunables.INTAKE_UP_ROTATION.getRotations())));
         }, this)
-            .withTimeout(0.5)
+            .withTimeout(1.0)
             .andThen(Commands.run(() -> {
                 intakePivot.setControl(new DutyCycleOut(intakePivotController.calculate(getIntakeRotation().getRotations(), Tunables.INTAKE_AGITATE_ROTATION.getRotations())));
             }, this))
-            .withTimeout(0.5).repeatedly().finallyDo(this::stop);
+            .withTimeout(1.0).repeatedly().finallyDo(this::stop);
     }
 
     public Command down() {

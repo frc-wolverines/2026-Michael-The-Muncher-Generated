@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.constants.FieldConstants;
 import frc.robot.subsystems.Drivetrain;
 
 public class Robot extends TimedRobot {
@@ -31,7 +32,8 @@ public class Robot extends TimedRobot {
         m_timeAndJoystickReplay.update();
         CommandScheduler.getInstance().run(); 
         Drivetrain drivetrain = m_robotContainer.drivetrain;
-        SmartDashboard.putNumber("DT Heading", drivetrain.getStateCopy().RawHeading.getDegrees());
+        SmartDashboard.putNumber("Distance from Goal", drivetrain.getStateCopy().Pose.getTranslation().getDistance(FieldConstants.Hub.innerCenterPoint.toTranslation2d()));
+        SmartDashboard.putNumber("Pose Heading", drivetrain.getStateCopy().Pose.getRotation().getDegrees());
         drivetrain.updateField();
     }
 
