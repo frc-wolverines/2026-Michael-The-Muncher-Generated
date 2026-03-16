@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.RobotContainer;
+import frc.robot.util.AlertContainer;
 
 public class Lights extends SubsystemBase {
 
@@ -26,6 +27,7 @@ public class Lights extends SubsystemBase {
 
     private final Trigger autoEnabled = new Trigger(DriverStation::isAutonomousEnabled);
     private final Trigger teleopEnabled = new Trigger(DriverStation::isTeleopEnabled);
+    private final Trigger majorFaultPresent = new Trigger(() -> !AlertContainer.getInstance().getMajorFaults().isEmpty());
 
     //Criteria met when the intake is at the correct angle and the rollers are running at an intaking speed to intake a ball
     private final Trigger intaking = new Trigger(() -> false);
@@ -50,6 +52,7 @@ public class Lights extends SubsystemBase {
         intaking.and(ableToShoot.negate()).and(shooting.negate()).whileTrue(intaking());
         ableToShoot.and(shooting.negate()).whileTrue(ableToShoot());
         shooting.whileTrue(shooting());
+        majorFaultPresent.whileTrue(error());
     }
 
     @Override
@@ -65,6 +68,14 @@ public class Lights extends SubsystemBase {
         SmartDashboard.putString("Lights/Color 8", towerBuffer.getLED(7).toString());
         SmartDashboard.putString("Lights/Color 9", towerBuffer.getLED(8).toString());
         SmartDashboard.putString("Lights/Color 10", towerBuffer.getLED(9).toString());
+    }
+
+    public Command error() {
+        return Commands.run(() -> {
+            LEDPattern pattern = LEDPattern.solid(Color.kRed).blink(Seconds.of(0.1)).atBrightness(Percent.of(70));
+            pattern.applyTo(towerBuffer);
+            towerStrip.setData(towerBuffer);
+        }, this).ignoringDisable(true).withName("Error");
     }
 
     public Command idle() {
