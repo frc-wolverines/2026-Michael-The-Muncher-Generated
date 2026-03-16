@@ -36,6 +36,7 @@ import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Feeder;
 import frc.robot.subsystems.Flywheels;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Lights;
 import frc.robot.subsystems.Turret;
 import frc.robot.util.CustomMath;
 
@@ -52,7 +53,7 @@ public class RobotContainer {
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
-    private final CommandXboxController joystick = new CommandXboxController(0);
+    public final CommandXboxController joystick = new CommandXboxController(0);
     private final CommandXboxController extraDebugJoystick = new CommandXboxController(1);
 
     //CONTROL TRIGGERS
@@ -81,6 +82,7 @@ public class RobotContainer {
     public final Intake intake = Intake.getInstance();
     public final Feeder feeder = Feeder.getInstance();
     public final Flywheels flywheels = Flywheels.getInstance();
+    public final Lights lights = Lights.getInstance();
     public Trigger spunUp = new Trigger(() -> {
         double distance = CustomMath.makePoseAllianceRelative(drivetrain.getStateCopy().Pose).getTranslation().getDistance(turret.currentLandmark);
         double velocity = MathUtil.clamp(flywheels.getVelocityForDistance(distance), -6000, 6000);
