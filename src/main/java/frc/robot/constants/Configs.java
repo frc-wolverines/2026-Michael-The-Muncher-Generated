@@ -28,7 +28,7 @@ public class Configs {
                 .withNeutralMode(NeutralModeValue.Brake))
         .withCurrentLimits(
             new CurrentLimitsConfigs()
-                .withStatorCurrentLimit(15)
+                .withStatorCurrentLimit(20)
                 .withStatorCurrentLimitEnable(true));
 
     public static final TalonFXConfiguration INTAKE_ROLLERS_CONFIGURATION = new TalonFXConfiguration()

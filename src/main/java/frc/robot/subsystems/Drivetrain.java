@@ -33,6 +33,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.constants.Constraints;
 import frc.robot.constants.FieldConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
@@ -294,7 +295,7 @@ public class Drivetrain extends TunerSwerveDrivetrain implements Subsystem {
     }
 
     public void resetCommand() {
-        resetPose(new Pose2d(new Translation2d(FieldConstants.LinesVertical.starting - Units.inchesToMeters(27/2), FieldConstants.LinesHorizontal.rightBumpStart + Units.inchesToMeters(27/2)), Rotation2d.k180deg));
+        resetPose(new Pose2d(new Translation2d(FieldConstants.LinesVertical.starting - Units.inchesToMeters(Constraints.ROBOT_LENGTH.baseUnitMagnitude()/2 - Constraints.BUMPER_THICKNESS.baseUnitMagnitude()), FieldConstants.LinesHorizontal.rightBumpStart + Units.inchesToMeters(Constraints.ROBOT_WIDTH.baseUnitMagnitude()/2 - Constraints.BUMPER_THICKNESS.baseUnitMagnitude())), Rotation2d.k180deg));
     }
 
     private void startSimThread() {

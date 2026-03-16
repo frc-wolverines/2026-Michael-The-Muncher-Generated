@@ -9,10 +9,15 @@ import static edu.wpi.first.units.Units.*;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.FollowPathCommand;
 
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.jni.WPIMathJNI;
 import edu.wpi.first.wpilibj.Joystick.AxisType;
 import edu.wpi.first.wpilibj.XboxController.Axis;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -32,6 +37,7 @@ import frc.robot.subsystems.Feeder;
 import frc.robot.subsystems.Flywheels;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Turret;
+import frc.robot.util.CustomMath;
 
 public class RobotContainer {
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
@@ -48,10 +54,25 @@ public class RobotContainer {
 
     private final CommandXboxController joystick = new CommandXboxController(0);
     private final CommandXboxController extraDebugJoystick = new CommandXboxController(1);
-    private final Trigger intakeTrigger = new Trigger(() -> joystick.getLeftTriggerAxis() > 0.1);
+
+    //CONTROL TRIGGERS
+    private final Trigger intakeTrigger = new Trigger(() -> joystick.getLeftTriggerAxis() > 0.9);
+    private final Trigger intakeDownTrigger = new Trigger(() -> joystick.getLeftTriggerAxis() > 0.1).and(intakeTrigger.negate());
     private final Trigger shootTrigger = new Trigger(() -> joystick.getRightTriggerAxis() > 0.9);
     private final Trigger spinUpTrigger = new Trigger(() -> joystick.getRightTriggerAxis() > 0.1).and(shootTrigger.negate());
     private final Trigger overrideFeeder = joystick.a();
+
+    //EVENT TRIGGERS
+    private final Trigger robotOutsideOfAllianceZone = new Trigger(() -> {
+        Drivetrain dt = Drivetrain.getInstance();
+        Pose2d pose = CustomMath.makePoseAllianceRelative(dt.getStateCopy().Pose);
+        return pose.getTranslation().getX() > FieldConstants.LinesVertical.allianceZone;
+    });
+    private final Trigger robotLeftOfCenterline = new Trigger(() -> {
+        Drivetrain dt = Drivetrain.getInstance();
+        Pose2d pose = dt.getStateCopy().Pose;
+        return pose.getTranslation().getY() > FieldConstants.LinesHorizontal.center;
+    });
 
     private final SendableChooser<Boolean> maintananceMode = new SendableChooser<>();
 
@@ -61,14 +82,20 @@ public class RobotContainer {
     public final Feeder feeder = Feeder.getInstance();
     public final Flywheels flywheels = Flywheels.getInstance();
     public Trigger spunUp = new Trigger(() -> {
-        double distance = drivetrain.getStateCopy().Pose.getTranslation().getDistance(turret.currentLandmark);
-        double velocity = flywheels.getVelocityForDistance(distance);
+        double distance = CustomMath.makePoseAllianceRelative(drivetrain.getStateCopy().Pose).getTranslation().getDistance(turret.currentLandmark);
+        double velocity = MathUtil.clamp(flywheels.getVelocityForDistance(distance), -6000, 6000);
         return Math.abs(velocity - flywheels.getVelocity()) < Tunables.FLYWHEEL_LAUNCH_TOLERANCE;
     });
 
     private final SendableChooser<Command> autoChooser;
 
     public RobotContainer() {
+        NamedCommands.registerCommand("IntakeDown", intake.down());
+        NamedCommands.registerCommand("IntakeDownIntake", intake.downWithAdvance());
+        NamedCommands.registerCommand("Shoot", Commands.parallel(
+            flywheels.velocityFor(FieldConstants.Hub.innerCenterPoint.toTranslation2d()),
+            feeder.getVoltageCommand(() -> 10.0, () -> 10.0)
+        ));
         autoChooser = AutoBuilder.buildAutoChooser("Tests");
         SmartDashboard.putData("Auto Mode", autoChooser);
 
@@ -89,32 +116,16 @@ public class RobotContainer {
     }
 
     private void configureBindings() {
-
-        turret.setDefaultCommand(turret.turnToLandmark(FieldConstants.Hub.innerCenterPoint.toTranslation2d(), false));
-        // extraDebugJoystick.a().onTrue(turret.getTurnToFieldRelativeAngle(Rotation2d.fromDegrees(0)));  
-        // extraDebugJoystick.b().onTrue(turret.getTurnToFieldRelativeAngle(Rotation2d.fromDegrees(90)));  
-        // extraDebugJoystick.y().onTrue(turret.getTurnToFieldRelativeAngle(Rotation2d.fromDegrees(180)));  
-        // extraDebugJoystick.x().onTrue(turret.getTurnToFieldRelativeAngle(Rotation2d.fromDegrees(270))); 
+        robotOutsideOfAllianceZone.and(robotLeftOfCenterline).whileTrue(turret.turnToLandmark(FieldConstants.leftFerrySpot));
+        robotOutsideOfAllianceZone.and(robotLeftOfCenterline.negate()).whileTrue(turret.turnToLandmark(FieldConstants.rightFerrySpot));
         
-        intakeTrigger.whileTrue(intake.down());
+        intakeTrigger.whileTrue(intake.downWithAdvance());
+        intakeDownTrigger.and(intakeTrigger.negate()).whileTrue(intake.down());
         feeder.setDefaultCommand(feeder.getDutyCycleCommand(() -> 0.0, () -> 0.0));
-        shootTrigger.and(spunUp).or(overrideFeeder).whileTrue(feeder.getVoltageCommand(() -> 10.0, () -> 10.0));
-        // shootTrigger.and(spunUp).and(intakeTrigger.negate()).whileTrue(intake.agitate().beforeStarting(Commands.waitSeconds(2)));
-
-        joystick.b().onTrue(flywheels.runOnce(() -> {flywheels.cachedDebugVelocity = 0;}));
-        joystick.x().onTrue(flywheels.dutyCycle(() -> 0.0));
-        joystick.y().onTrue(flywheels.velocityFor(FieldConstants.Hub.innerCenterPoint.toTranslation2d()));
-        joystick.pov(0).onTrue(flywheels.runOnce(() -> {flywheels.cachedDebugVelocity -= 5;}));
-        joystick.pov(180).onTrue(flywheels.runOnce(() -> {flywheels.cachedDebugVelocity += 5;}));
+        shootTrigger.and(spunUp).or(overrideFeeder).whileTrue(feeder.getVoltageCommand(() -> 10.0, () -> 10.0 * (joystick.b().getAsBoolean() ? -1.0 : 1.0)));
+        // shootTrigger.and(spunUp).and(intakeTrigger.negate()).and(intakeDownTrigger.negate()).whileTrue(intake.agitate());
 
         spinUpTrigger.or(shootTrigger).whileTrue(flywheels.velocityFor(FieldConstants.Hub.innerCenterPoint.toTranslation2d()));
-
-        // intake.setDefaultCommand(
-        //     intake.getStateCommand(() -> {
-        //         return new IntakeState(Rotation2d.fromDegrees(extraDebugJoystick.getLeftTriggerAxis() > 0.1 ? 90 : 0.0), extraDebugJoystick.getLeftTriggerAxis() > 0.1 ? -10 : 0.0);
-        //     })
-        // );
-
 
         joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
         joystick.rightBumper().onTrue(drivetrain.runOnce(drivetrain::resetCommand));

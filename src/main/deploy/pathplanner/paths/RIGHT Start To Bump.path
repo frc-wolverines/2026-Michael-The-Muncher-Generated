@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.0,
-        "y": 7.0
+        "x": 3.5251957295373675,
+        "y": 3.92202846975089
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.8222232824480624,
-        "y": 6.645916030535363
+        "x": 2.965717674970344,
+        "y": 3.760640569395018
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Right Hub Start"
     },
     {
       "anchor": {
-        "x": 4.0,
-        "y": 6.0
+        "x": 3.5251957295373675,
+        "y": 2.491055753262159
       },
       "prevControl": {
-        "x": 1.0314026717557256,
-        "y": 5.817452290076336
+        "x": 2.8258481613285884,
+        "y": 2.523333333333334
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Right Bump Setup"
     }
   ],
   "rotationTargets": [],
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 1.5563284314261283
+    "rotation": 0.0
   },
   "reversed": false,
   "folder": null,

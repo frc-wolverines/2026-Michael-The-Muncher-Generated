@@ -1,6 +1,9 @@
 package frc.robot.constants;
 
+import static edu.wpi.first.units.Units.Inches;
+
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.measure.Distance;
 
 public class Constraints {
     public static final double TURRET_AZIMUTH_GEAR_RATIO = 5 * 10;
@@ -10,4 +13,8 @@ public class Constraints {
 
     public static final Rotation2d TURRET_MIN_ROTATION = Rotation2d.fromDegrees(-135);
     public static final Rotation2d TURRET_MAX_ROTATION = Rotation2d.fromDegrees(135);
+
+    public static final Distance ROBOT_WIDTH = Distance.ofBaseUnits(27, Inches);
+    public static final Distance ROBOT_LENGTH = Distance.ofBaseUnits(27, Inches);
+    public static final Distance BUMPER_THICKNESS = Distance.ofBaseUnits(5, Inches);
 }   

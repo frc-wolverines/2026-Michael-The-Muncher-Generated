@@ -48,6 +48,7 @@ public class Intake extends SubsystemBase {
         intakeRollers.getConfigurator().apply(Configs.INTAKE_ROLLERS_CONFIGURATION);
 
         setDefaultCommand(idle());
+        intakePivot.setPosition(intakeEncoder.get());
     }
 
     public Rotation2d getIntakeRotation() {
@@ -86,19 +87,20 @@ public class Intake extends SubsystemBase {
         return getStateCommand(Tunables.INTAKE_UP_STATE);
     }
 
+    public Command agitateC() {
+        return getStateCommand(Tunables.INTAKE_AGITATE_STATE);
+    }
+
     public Command agitate() {
-        return Commands.run(() -> {
-            intakePivot.setControl(new DutyCycleOut(intakePivotController.calculate(getIntakeRotation().getRotations(), Tunables.INTAKE_UP_ROTATION.getRotations())));
-        }, this)
-            .withTimeout(1.0)
-            .andThen(Commands.run(() -> {
-                intakePivot.setControl(new DutyCycleOut(intakePivotController.calculate(getIntakeRotation().getRotations(), Tunables.INTAKE_AGITATE_ROTATION.getRotations())));
-            }, this))
-            .withTimeout(1.0).repeatedly().finallyDo(this::stop);
+        return ((idle().withTimeout(0.3)).andThen(agitateC().withTimeout(0.3))).repeatedly().withName("Agitate");
     }
 
     public Command down() {
         return getStateCommand(Tunables.INTAKE_DOWN_STATE);
+    }
+
+    public Command downWithAdvance() {
+        return getStateCommand(Tunables.INTAKE_DOWN_WITH_ADVANCE_STATE);
     }
 
     public void stop() {

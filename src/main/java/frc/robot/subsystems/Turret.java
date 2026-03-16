@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Telemetry;
 import frc.robot.constants.Configs;
 import frc.robot.constants.Constraints;
+import frc.robot.constants.FieldConstants;
 import frc.robot.constants.Map;
 import frc.robot.constants.Tunables;
 import frc.robot.util.CustomMath;
@@ -40,6 +41,9 @@ public class Turret extends SubsystemBase {
         turretAzimuth.getConfigurator().apply(Configs.TURRET_AZIMUTH_CONFIGURATION);
         turretAzimuth.setPosition(0);
         azimuthEncoder = new DutyCycleEncoder(1);
+
+        turretAzimuth.setPosition(getRotation().getRotations());
+        setDefaultCommand(turnToLandmark(FieldConstants.Hub.innerCenterPoint.toTranslation2d()));
     }
 
     @Override
@@ -80,16 +84,14 @@ public class Turret extends SubsystemBase {
             );
     }
 
-    public Command turnToLandmark(Translation2d landmark, boolean accountForVelocity) {
+    public Command turnToLandmark(Translation2d landmark) {
         return Commands.runEnd(() -> {
             Translation2d newLandmark = landmark;
             Drivetrain drivetrain = Drivetrain.getInstance();
             SwerveDriveState state = drivetrain.getStateCopy();
-            Pose2d robotPose = state.Pose;
+            Pose2d robotPose = CustomMath.makePoseAllianceRelative(state.Pose);
             ChassisSpeeds fieldSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(state.Speeds, robotPose.getRotation());
-            if(accountForVelocity) {
-                newLandmark = newLandmark.plus(new Translation2d(fieldSpeeds.vxMetersPerSecond * 0.1, fieldSpeeds.vyMetersPerSecond * 0.1));
-            }
+            newLandmark = newLandmark.minus(new Translation2d(fieldSpeeds.vxMetersPerSecond * 1.1, fieldSpeeds.vyMetersPerSecond * 1.1));
             Rotation2d translationAngle = newLandmark.minus(robotPose.getTranslation()).getAngle();
             Rotation2d relativeAngle = convertToRelative(translationAngle);
             relativeAngle = relativeAngle.plus(Rotation2d.fromRadians(state.Speeds.omegaRadiansPerSecond * 0.15));

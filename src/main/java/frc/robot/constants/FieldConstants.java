@@ -30,6 +30,9 @@ public class FieldConstants {
   // Fuel dimensions
   public static final double fuelDiameter = Units.inchesToMeters(5.91);
 
+    public static final Translation2d leftFerrySpot = new Translation2d(1, fieldWidth - 2);
+    public static final Translation2d rightFerrySpot = new Translation2d(1, 2); 
+
   /**
    * Officially defined and relevant vertical lines found on the field (defined by X-axis offset)
    */

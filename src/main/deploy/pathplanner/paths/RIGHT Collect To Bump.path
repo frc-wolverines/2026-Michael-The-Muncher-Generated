@@ -3,32 +3,41 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.0,
-        "y": 7.0
+        "x": 7.656725978647687,
+        "y": 4.244804270462634
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.0,
-        "y": 7.0
+        "x": 6.440937129300119,
+        "y": 1.6518386714116247
       },
       "isLocked": false,
-      "linkedName": "Start"
+      "linkedName": "Right Collect"
     },
     {
       "anchor": {
-        "x": 4.0,
-        "y": 6.0
+        "x": 2.976476868327403,
+        "y": 2.297390272835112
       },
       "prevControl": {
-        "x": 3.0,
-        "y": 6.0
+        "x": 4.740984578884936,
+        "y": 2.394223013048635
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": null
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.5044404973357002,
+      "rotationDegrees": 90.0
+    },
+    {
+      "waypointRelativePos": 0.8952042628774372,
+      "rotationDegrees": 90.0
+    }
+  ],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
@@ -42,13 +51,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -91.37346318371951
+    "rotation": -140.90614111377053
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 59.99999999999999
   },
   "useDefaultConstraints": true
 }

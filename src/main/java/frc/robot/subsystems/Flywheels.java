@@ -17,6 +17,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -24,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.constants.Tunables;
+import frc.robot.util.CustomMath;
 
 public class Flywheels extends SubsystemBase {
   private final TalonFX leftTalon, rightTalon;
@@ -75,7 +77,9 @@ public class Flywheels extends SubsystemBase {
               Translation2d newLandmark = landmark;
               Drivetrain drivetrain = Drivetrain.getInstance();
               SwerveDriveState state = drivetrain.getStateCopy();
-              Pose2d robotPose = state.Pose;
+              Pose2d robotPose = CustomMath.makePoseAllianceRelative(state.Pose);
+              ChassisSpeeds fieldSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(state.Speeds, robotPose.getRotation());
+              newLandmark = newLandmark.minus(new Translation2d(fieldSpeeds.vxMetersPerSecond * 1.5, fieldSpeeds.vyMetersPerSecond * 1.5));
               double distance = robotPose.getTranslation().getDistance(newLandmark);
               double velocity = getVelocityForDistance(distance);
               leftTalon.setControl(new VelocityDutyCycle(velocity));
