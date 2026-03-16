@@ -26,10 +26,14 @@ public class Lights extends SubsystemBase {
 
     private final Trigger autoEnabled = new Trigger(DriverStation::isAutonomousEnabled);
     private final Trigger teleopEnabled = new Trigger(DriverStation::isTeleopEnabled);
-    public final CommandXboxController joystick = new CommandXboxController(0);
 
+    //Criteria met when the intake is at the correct angle and the rollers are running at an intaking speed to intake a ball
     private final Trigger intaking = new Trigger(() -> false);
+
+    //Criteria met when the turret is aligned with the target and ready to shoot
     private final Trigger ableToShoot = new Trigger(() -> false);
+
+    //Criteria met when the shooter wheel is up to speed, the turret is aligned with the target, and the feeding system is running to shoot a ball
     private final Trigger shooting = new Trigger(() -> false);
 
     public Lights() {
@@ -41,10 +45,10 @@ public class Lights extends SubsystemBase {
         towerStrip.start();
         setDefaultCommand(idle());
 
-        autoEnabled.whileTrue(autoIdle());
-        teleopEnabled.whileTrue(teleopIdle());
-        intaking.whileTrue(intaking());
-        ableToShoot.whileTrue(ableToShoot());
+        autoEnabled.and(intaking.negate()).and(ableToShoot.negate()).and(shooting.negate()).whileTrue(autoIdle());
+        teleopEnabled.and(intaking.negate()).and(ableToShoot.negate()).and(shooting.negate()).whileTrue(teleopIdle());
+        intaking.and(ableToShoot.negate()).and(shooting.negate()).whileTrue(intaking());
+        ableToShoot.and(shooting.negate()).whileTrue(ableToShoot());
         shooting.whileTrue(shooting());
     }
 
