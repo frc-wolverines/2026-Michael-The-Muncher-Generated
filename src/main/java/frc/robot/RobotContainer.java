@@ -31,6 +31,7 @@ import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Feeder;
 import frc.robot.subsystems.Flywheels;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Lights;
 import frc.robot.subsystems.Turret;
 
 public class RobotContainer {
@@ -60,6 +61,7 @@ public class RobotContainer {
     public final Intake intake = Intake.getInstance();
     public final Feeder feeder = Feeder.getInstance();
     public final Flywheels flywheels = Flywheels.getInstance();
+    public final Lights lights = Lights.getInstance();
     public Trigger spunUp = new Trigger(() -> {
         double distance = drivetrain.getStateCopy().Pose.getTranslation().getDistance(turret.currentLandmark);
         double velocity = flywheels.getVelocityForDistance(distance);
