@@ -7,6 +7,7 @@ package frc.robot;
 import com.ctre.phoenix6.HootAutoReplay;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.Alert;
@@ -17,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.constants.FieldConstants;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Localization;
+import frc.robot.subsystems.Turret;
 import frc.robot.util.AlertContainer;
 
 public class Robot extends TimedRobot {
@@ -24,6 +26,8 @@ public class Robot extends TimedRobot {
 
     public final RobotContainer m_robotContainer;
     private final StructPublisher<Pose2d> visionPosePublisher = NetworkTableInstance.getDefault().getStructTopic("Vision Pose", Pose2d.struct).publish();
+    private final StructPublisher<Pose2d> targetPosePublisher = NetworkTableInstance.getDefault().getStructTopic("Target Pose", Pose2d.struct).publish();
+
 
     /* log and replay timestamp and joystick data */
     private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
@@ -42,6 +46,7 @@ public class Robot extends TimedRobot {
         SmartDashboard.putNumber("Distance from Goal", drivetrain.getStateCopy().Pose.getTranslation().getDistance(FieldConstants.Hub.innerCenterPoint.toTranslation2d()));
         SmartDashboard.putNumber("Pose Heading", drivetrain.getStateCopy().Pose.getRotation().getDegrees());
         visionPosePublisher.set(Localization.getInstance().getVisionMT2Pose().pose);
+        targetPosePublisher.set(new Pose2d(Turret.getInstance().currentLandmark, Rotation2d.kZero));
         drivetrain.updateField();
     }
 

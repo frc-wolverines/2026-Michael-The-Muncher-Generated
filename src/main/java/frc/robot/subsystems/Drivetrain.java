@@ -37,6 +37,7 @@ import frc.robot.constants.Constraints;
 import frc.robot.constants.FieldConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+import frc.robot.util.CustomMath;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
@@ -295,7 +296,7 @@ public class Drivetrain extends TunerSwerveDrivetrain implements Subsystem {
     }
 
     public void resetCommand() {
-        resetPose(new Pose2d(new Translation2d(FieldConstants.LinesVertical.starting - Units.inchesToMeters(Constraints.ROBOT_LENGTH.baseUnitMagnitude()/2 - Constraints.BUMPER_THICKNESS.baseUnitMagnitude()), FieldConstants.LinesHorizontal.rightBumpStart + Units.inchesToMeters(Constraints.ROBOT_WIDTH.baseUnitMagnitude()/2 - Constraints.BUMPER_THICKNESS.baseUnitMagnitude())), Rotation2d.k180deg));
+        resetPose(CustomMath.makePoseAllianceRelative(new Pose2d(new Translation2d(FieldConstants.LinesVertical.starting - Units.inchesToMeters(Constraints.ROBOT_LENGTH.baseUnitMagnitude()/2 - Constraints.BUMPER_THICKNESS.baseUnitMagnitude()), FieldConstants.LinesHorizontal.rightBumpStart + Units.inchesToMeters(Constraints.ROBOT_WIDTH.baseUnitMagnitude()/2 - Constraints.BUMPER_THICKNESS.baseUnitMagnitude())), Rotation2d.k180deg)));
     }
 
     private void startSimThread() {

@@ -13,6 +13,7 @@ import com.ctre.phoenix6.controls.VelocityDutyCycle;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -92,6 +93,18 @@ public class Flywheels extends SubsystemBase {
 
   public double getVelocityForDistance(double distanceMeters) {
     return (-0.357347 * distanceMeters * distanceMeters) - (6.0486 * distanceMeters) - 31.85358;
+  }
+
+  public boolean spunUp() {
+      Drivetrain drivetrain = Drivetrain.getInstance();
+      Turret turret = Turret.getInstance();
+      SwerveDriveState state = drivetrain.getStateCopy();
+      Pose2d robotPose = CustomMath.makePoseAllianceRelative(state.Pose);
+      ChassisSpeeds fieldSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(state.Speeds, robotPose.getRotation());
+      Translation2d newLandmark = turret.currentLandmark.minus(new Translation2d(fieldSpeeds.vxMetersPerSecond * 1.5, fieldSpeeds.vyMetersPerSecond * 1.5));
+      double distance = CustomMath.makePoseAllianceRelative(drivetrain.getStateCopy().Pose).getTranslation().getDistance(CustomMath.makeTranslationAllianceRelative(newLandmark));
+      double velocity = MathUtil.clamp(getVelocityForDistance(distance), -6000, 6000);
+      return Math.abs(velocity - getVelocity()) < Tunables.FLYWHEEL_LAUNCH_TOLERANCE;
   }
 
   private static Flywheels _instance;

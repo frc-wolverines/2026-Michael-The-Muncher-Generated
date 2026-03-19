@@ -33,9 +33,10 @@ public class Intake extends SubsystemBase {
     private final TalonFX intakePivot;
     private final PIDController intakePivotController = new PIDController(Tunables.INTAKE_PIVOT_PID_CONSTANTS.kP, Tunables.INTAKE_PIVOT_PID_CONSTANTS.kI, Tunables.INTAKE_PIVOT_PID_CONSTANTS.kD);
     private final DutyCycleEncoder intakeEncoder;
-    private final SlewRateLimiter rollerAccelLimiter = new SlewRateLimiter(10);
 
     private final TalonFX intakeRollers;
+    public IntakeState state = Tunables.INTAKE_UP_STATE;
+    public boolean outsideDefault = true;
     
     public Intake() {
         intakePivot = new TalonFX(Map.INTAKE_PIVOT);
@@ -73,14 +74,14 @@ public class Intake extends SubsystemBase {
         }, this);
     }
 
-    private Command getStateCommand(IntakeState state) {
+    public Command getStateCommand(IntakeState state) {
         return Commands.runEnd(() -> {
             intakePivot.setControl(new DutyCycleOut(intakePivotController.calculate(getIntakeRotation().getRotations(), state.rotation().getRotations())));
-            intakeRollers.setControl(new VoltageOut(state.voltage()));
+            intakeRollers.setControl(new DutyCycleOut(state.voltage().baseUnitMagnitude() / 12));
         }, () -> {
             intakePivot.setControl(new NeutralOut());
             intakeRollers.setControl(new NeutralOut());
-        }, this);
+        }, this).beforeStarting(() -> this.state = state, this);
     }
 
     public Command idle() {
@@ -93,6 +94,16 @@ public class Intake extends SubsystemBase {
 
     public Command agitate() {
         return ((idle().withTimeout(0.3)).andThen(agitateC().withTimeout(0.3))).repeatedly().withName("Agitate");
+    }
+
+    public void toggleDefault() {
+        outsideDefault = !outsideDefault;
+        if(outsideDefault) setDefaultCommand(idle());
+        else setDefaultCommand(collapse());
+    }
+
+    public Command collapse() {
+        return getStateCommand(Tunables.INTAKE_COLLAPSED_STATE);
     }
 
     public Command down() {

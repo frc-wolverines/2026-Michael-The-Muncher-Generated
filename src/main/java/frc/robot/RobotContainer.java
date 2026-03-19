@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -83,11 +84,7 @@ public class RobotContainer {
     public final Feeder feeder = Feeder.getInstance();
     public final Flywheels flywheels = Flywheels.getInstance();
     public final Lights lights = Lights.getInstance();
-    public Trigger spunUp = new Trigger(() -> {
-        double distance = CustomMath.makePoseAllianceRelative(drivetrain.getStateCopy().Pose).getTranslation().getDistance(turret.currentLandmark);
-        double velocity = MathUtil.clamp(flywheels.getVelocityForDistance(distance), -6000, 6000);
-        return Math.abs(velocity - flywheels.getVelocity()) < Tunables.FLYWHEEL_LAUNCH_TOLERANCE;
-    });
+    public Trigger spunUp = new Trigger(flywheels::spunUp);
 
     private final SendableChooser<Command> autoChooser;
 
@@ -96,7 +93,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("IntakeDownIntake", intake.downWithAdvance());
         NamedCommands.registerCommand("Shoot", Commands.parallel(
             flywheels.velocityFor(FieldConstants.Hub.innerCenterPoint.toTranslation2d()),
-            feeder.getVoltageCommand(() -> 10.0, () -> 10.0)
+            feeder.getDutyCycleCommand(() -> 1.0, () -> 1.0)
         ));
         autoChooser = AutoBuilder.buildAutoChooser("Tests");
         SmartDashboard.putData("Auto Mode", autoChooser);
@@ -120,17 +117,26 @@ public class RobotContainer {
     private void configureBindings() {
         robotOutsideOfAllianceZone.and(robotLeftOfCenterline).whileTrue(turret.turnToLandmark(FieldConstants.leftFerrySpot));
         robotOutsideOfAllianceZone.and(robotLeftOfCenterline.negate()).whileTrue(turret.turnToLandmark(FieldConstants.rightFerrySpot));
+        joystick.y().whileTrue(Commands.parallel(
+            flywheels.velocityFor(FieldConstants.Hub.innerCenterPoint.toTranslation2d()),
+            feeder.getDutyCycleCommand(() -> 1.0, () -> 1.0)
+        ));
         
         intakeTrigger.whileTrue(intake.downWithAdvance());
         intakeDownTrigger.and(intakeTrigger.negate()).whileTrue(intake.down());
-        feeder.setDefaultCommand(feeder.getDutyCycleCommand(() -> 0.0, () -> 0.0));
-        shootTrigger.and(spunUp).or(overrideFeeder).whileTrue(feeder.getVoltageCommand(() -> 10.0, () -> 10.0 * (joystick.b().getAsBoolean() ? -1.0 : 1.0)));
-        // shootTrigger.and(spunUp).and(intakeTrigger.negate()).and(intakeDownTrigger.negate()).whileTrue(intake.agitate());
+        joystick.leftBumper().whileTrue(
+            intake.getStateCommand(new IntakeState(Tunables.INTAKE_DOWN_ROTATION, Volts.of(10)))
+            .alongWith(feeder.getDutyCycleCommand(() -> -1.0, () -> -1.0))
+        );
+        feeder.setDefaultCommand(feeder.getDutyCycleCommand(() -> extraDebugJoystick.getLeftY(), () -> 0.0));
+        shootTrigger.or(overrideFeeder).whileTrue(feeder.getDutyCycleCommand(() -> 1.0, () -> 1.0 * (joystick.b().getAsBoolean() ? -1.0 : 1.0)));
+        joystick.rightStick().whileTrue(intake.agitate());
+        joystick.leftStick().onTrue(new InstantCommand(intake::toggleDefault, intake));
 
         spinUpTrigger.or(shootTrigger).whileTrue(flywheels.velocityFor(FieldConstants.Hub.innerCenterPoint.toTranslation2d()));
 
-        joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
-        joystick.rightBumper().onTrue(drivetrain.runOnce(drivetrain::resetCommand));
+        joystick.pov(0).onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        joystick.pov(180).onTrue(drivetrain.runOnce(drivetrain::resetCommand));
         setupDrivetrain();
 
         drivetrain.registerTelemetry(logger::telemeterize);
@@ -139,8 +145,8 @@ public class RobotContainer {
     private void setupDrivetrain() {
         drivetrain.setDefaultCommand(
             drivetrain.applyRequest(() ->
-                drive.withVelocityX(-joystick.getLeftY() * MaxSpeed * 0.65) // Drive forward with negative Y (forward)
-                    .withVelocityY(-joystick.getLeftX() * MaxSpeed * 0.65) // Drive left with negative X (left)
+                drive.withVelocityX(-joystick.getLeftY() * MaxSpeed * (shootTrigger.getAsBoolean() ? 0.2 : 0.65)) // Drive forward with negative Y (forward)
+                    .withVelocityY(-joystick.getLeftX() * MaxSpeed * (shootTrigger.getAsBoolean() ? 0.2 : 0.65)) // Drive left with negative X (left)
                     .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );

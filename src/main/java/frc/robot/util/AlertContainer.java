@@ -9,8 +9,9 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 public class AlertContainer {
     public List<Alert> alerts = new ArrayList<>();
     
-    public void register(Alert alert) {
+    public Alert register(Alert alert) {
         alerts.add(alert);
+        return alert;
     }
 
     public void clearAll() {
