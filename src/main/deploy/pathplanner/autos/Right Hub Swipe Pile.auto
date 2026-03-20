@@ -7,7 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "RIGHT Bump to Collect"
+            "pathName": "RIGHT Hub to Swipe"
           }
         },
         {
@@ -17,7 +17,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "RIGHT Collect To Bump"
+                  "pathName": "RIGHT Swipe To Shoot"
                 }
               },
               {

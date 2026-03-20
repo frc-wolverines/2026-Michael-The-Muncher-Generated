@@ -68,12 +68,12 @@ public class RobotContainer {
     private final Trigger robotOutsideOfAllianceZone = new Trigger(() -> {
         Drivetrain dt = Drivetrain.getInstance();
         Pose2d pose = CustomMath.makePoseAllianceRelative(dt.getStateCopy().Pose);
-        return pose.getTranslation().getX() > FieldConstants.LinesVertical.allianceZone;
+        return CustomMath.makePoseAllianceRelative(pose).getTranslation().getX() > FieldConstants.LinesVertical.allianceZone;
     });
     private final Trigger robotLeftOfCenterline = new Trigger(() -> {
         Drivetrain dt = Drivetrain.getInstance();
         Pose2d pose = dt.getStateCopy().Pose;
-        return pose.getTranslation().getY() > FieldConstants.LinesHorizontal.center;
+        return (CustomMath.makePoseAllianceRelative(pose).getTranslation().getY()) > FieldConstants.LinesHorizontal.center;
     });
 
     private final SendableChooser<Boolean> maintananceMode = new SendableChooser<>();
@@ -92,9 +92,10 @@ public class RobotContainer {
         NamedCommands.registerCommand("IntakeDown", intake.down());
         NamedCommands.registerCommand("IntakeDownIntake", intake.downWithAdvance());
         NamedCommands.registerCommand("Shoot", Commands.parallel(
-            flywheels.velocityFor(FieldConstants.Hub.innerCenterPoint.toTranslation2d()),
+            flywheels.velocityFor(CustomMath.makeTranslationAllianceRelative(FieldConstants.Hub.innerCenterPoint.toTranslation2d())),
             feeder.getDutyCycleCommand(() -> 1.0, () -> 1.0)
         ));
+        NamedCommands.registerCommand("IntakeStayCollapsed", intake.collapse());
         autoChooser = AutoBuilder.buildAutoChooser("Tests");
         SmartDashboard.putData("Auto Mode", autoChooser);
 
@@ -115,8 +116,8 @@ public class RobotContainer {
     }
 
     private void configureBindings() {
-        robotOutsideOfAllianceZone.and(robotLeftOfCenterline).whileTrue(turret.turnToLandmark(FieldConstants.leftFerrySpot));
-        robotOutsideOfAllianceZone.and(robotLeftOfCenterline.negate()).whileTrue(turret.turnToLandmark(FieldConstants.rightFerrySpot));
+        robotOutsideOfAllianceZone.and(robotLeftOfCenterline).whileTrue(turret.turnToLandmark(CustomMath.makeTranslationAllianceRelative(FieldConstants.leftFerrySpot)));
+        robotOutsideOfAllianceZone.and(robotLeftOfCenterline.negate()).whileTrue(turret.turnToLandmark(CustomMath.makeTranslationAllianceRelative(FieldConstants.rightFerrySpot)));
         joystick.y().whileTrue(Commands.parallel(
             flywheels.velocityFor(FieldConstants.Hub.innerCenterPoint.toTranslation2d()),
             feeder.getDutyCycleCommand(() -> 1.0, () -> 1.0)

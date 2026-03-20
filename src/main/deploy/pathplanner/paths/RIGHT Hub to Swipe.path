@@ -3,45 +3,45 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.5251957295373675,
-        "y": 3.92202846975089
+        "x": 3.518025969328704,
+        "y": 2.21
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.0296678529062877,
-        "y": 3.0612930011862396
+        "x": 4.044812934027778,
+        "y": 2.856818793402778
       },
       "isLocked": false,
       "linkedName": "Right Hub Start"
     },
     {
       "anchor": {
-        "x": 3.5251957295373675,
-        "y": 2.491055753262159
+        "x": 4.920451099537038,
+        "y": 2.6279036458333325
       },
       "prevControl": {
-        "x": 3.2751957295373675,
-        "y": 2.491055753262159
+        "x": 4.670451099537038,
+        "y": 2.6279036458333325
       },
       "nextControl": {
-        "x": 3.7751957295373666,
-        "y": 2.491055753262159
+        "x": 5.170451099537038,
+        "y": 2.6279036458333325
       },
       "isLocked": false,
       "linkedName": "Right Bump Setup"
     },
     {
       "anchor": {
-        "x": 6.161198102016608,
-        "y": 2.491055753262159
+        "x": 6.156422309027778,
+        "y": 2.182092954282408
       },
       "prevControl": {
-        "x": 6.042673146257854,
-        "y": 2.7111735282427034
+        "x": 6.037897353269023,
+        "y": 2.4022107292629524
       },
       "nextControl": {
-        "x": 6.763778977094116,
-        "y": 1.3719769852610746
+        "x": 6.7590031841052856,
+        "y": 1.0630141862813236
       },
       "isLocked": false,
       "linkedName": null
@@ -53,7 +53,7 @@
       },
       "prevControl": {
         "x": 7.481995668738236,
-        "y": 0.7501980722743338
+        "y": 0.750198072274332
       },
       "nextControl": null,
       "isLocked": false,
@@ -70,7 +70,7 @@
       "rotationDegrees": 0.0
     },
     {
-      "waypointRelativePos": 2.584369449378334,
+      "waypointRelativePos": 2.58,
       "rotationDegrees": 59.99999999999999
     }
   ],
@@ -92,9 +92,20 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
+      "name": "IntakeStayCollapsed",
+      "waypointRelativePos": 0.0,
+      "endWaypointRelativePos": 0.8408300456810628,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "IntakeStayCollapsed"
+        }
+      }
+    },
+    {
       "name": "IntakeDownIntake",
-      "waypointRelativePos": 0.85,
-      "endWaypointRelativePos": 2.0,
+      "waypointRelativePos": 2.0,
+      "endWaypointRelativePos": 3.0,
       "command": {
         "type": "named",
         "data": {
@@ -116,7 +127,7 @@
     "rotation": 59.99999999999999
   },
   "reversed": false,
-  "folder": null,
+  "folder": "RIGHT Hub Start",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 0.0

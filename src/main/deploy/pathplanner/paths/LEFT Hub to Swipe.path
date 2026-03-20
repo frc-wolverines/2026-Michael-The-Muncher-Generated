@@ -1,0 +1,136 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 3.518025969328704,
+        "y": 6.0
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 4.044812934027778,
+        "y": 5.353181206597222
+      },
+      "isLocked": false,
+      "linkedName": "Left Hub Start"
+    },
+    {
+      "anchor": {
+        "x": 4.920451099537038,
+        "y": 5.5820963541666675
+      },
+      "prevControl": {
+        "x": 4.670451099537038,
+        "y": 5.5820963541666675
+      },
+      "nextControl": {
+        "x": 5.170451099537038,
+        "y": 5.5820963541666675
+      },
+      "isLocked": false,
+      "linkedName": "Left Bump Setup"
+    },
+    {
+      "anchor": {
+        "x": 6.156422309027778,
+        "y": 6.027907045717592
+      },
+      "prevControl": {
+        "x": 6.037897353269023,
+        "y": 5.8077892707370475
+      },
+      "nextControl": {
+        "x": 6.7590031841052856,
+        "y": 7.146985813718676
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 7.656725978647687,
+        "y": 3.965195729537366
+      },
+      "prevControl": {
+        "x": 7.481995668738236,
+        "y": 7.4598019277256675
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Left Collect"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1.7584369449378405,
+      "rotationDegrees": 0.0
+    },
+    {
+      "waypointRelativePos": 2.2753108348135,
+      "rotationDegrees": 0.0
+    },
+    {
+      "waypointRelativePos": 2.58,
+      "rotationDegrees": -59.99999999999999
+    }
+  ],
+  "constraintZones": [
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 2.557930258717664,
+      "maxWaypointRelativePos": 3.0,
+      "constraints": {
+        "maxVelocity": 1.0,
+        "maxAcceleration": 3.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "IntakeStayCollapsed",
+      "waypointRelativePos": 0.0,
+      "endWaypointRelativePos": 0.8408300456810628,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "IntakeStayCollapsed"
+        }
+      }
+    },
+    {
+      "name": "IntakeDownIntake",
+      "waypointRelativePos": 2.0,
+      "endWaypointRelativePos": 3.0,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "IntakeDownIntake"
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -59.99999999999999
+  },
+  "reversed": false,
+  "folder": "LEFT Hub Start",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 0.0
+  },
+  "useDefaultConstraints": true
+}

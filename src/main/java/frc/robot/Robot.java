@@ -20,6 +20,7 @@ import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Localization;
 import frc.robot.subsystems.Turret;
 import frc.robot.util.AlertContainer;
+import frc.robot.util.CustomMath;
 
 public class Robot extends TimedRobot {
     private Command m_autonomousCommand;
@@ -46,7 +47,7 @@ public class Robot extends TimedRobot {
         SmartDashboard.putNumber("Distance from Goal", drivetrain.getStateCopy().Pose.getTranslation().getDistance(FieldConstants.Hub.innerCenterPoint.toTranslation2d()));
         SmartDashboard.putNumber("Pose Heading", drivetrain.getStateCopy().Pose.getRotation().getDegrees());
         visionPosePublisher.set(Localization.getInstance().getVisionMT2Pose().pose);
-        targetPosePublisher.set(new Pose2d(Turret.getInstance().currentLandmark, Rotation2d.kZero));
+        targetPosePublisher.set(CustomMath.makePoseAllianceRelative(new Pose2d(Turret.getInstance().currentLandmark, Rotation2d.kZero)));
         drivetrain.updateField();
     }
 
