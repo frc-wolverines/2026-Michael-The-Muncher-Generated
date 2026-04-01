@@ -7,6 +7,7 @@ package frc.robot.subsystems;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityDutyCycle;
@@ -35,8 +36,10 @@ public class Flywheels extends SubsystemBase {
   /** Creates a new Flywheels. */
   public Flywheels() {
     leftTalon = new TalonFX(frc.robot.constants.Map.LEFT_FLYWHEEL);
+    leftTalon.getConfigurator().apply(new CurrentLimitsConfigs().withStatorCurrentLimit(40).withStatorCurrentLimitEnable(true));
     leftTalon.getConfigurator().apply(Tunables.FLYWHEEL_SLOT_ZEROS);
     rightTalon = new TalonFX(frc.robot.constants.Map.RIGHT_FLYWHEEL);
+    rightTalon.getConfigurator().apply(new CurrentLimitsConfigs().withStatorCurrentLimit(40).withStatorCurrentLimitEnable(true));
     rightTalon.getConfigurator().apply(Tunables.FLYWHEEL_SLOT_ZEROS);
   }
 

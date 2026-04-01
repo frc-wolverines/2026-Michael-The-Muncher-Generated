@@ -11,7 +11,7 @@ import frc.robot.constants.Frames.IntakeState;
 
 public class Tunables {
     public static final PIDConstants TURRET_AZIMUTH_PID_CONSTANTS = new PIDConstants(3.0);
-    public static final PIDConstants INTAKE_PIVOT_PID_CONSTANTS = new PIDConstants(5);
+    public static final PIDConstants INTAKE_PIVOT_PID_CONSTANTS = new PIDConstants(3);
 
     public static final Rotation2d INTAKE_DOWN_ROTATION = Rotation2d.fromDegrees(125);
     public static final Rotation2d INTAKE_UP_ROTATION = Rotation2d.fromDegrees(50);

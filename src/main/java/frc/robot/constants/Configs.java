@@ -20,7 +20,7 @@ public class Configs {
                 .withNeutralMode(NeutralModeValue.Coast)
         )
         .withCurrentLimits(new CurrentLimitsConfigs()
-            .withStatorCurrentLimit(30)
+            .withStatorCurrentLimit(15)
         );
 
     public static final TalonFXConfiguration INTAKE_PIVOT_CONFIGURATION = new TalonFXConfiguration()
@@ -29,7 +29,7 @@ public class Configs {
                 .withNeutralMode(NeutralModeValue.Brake))
         .withCurrentLimits(
             new CurrentLimitsConfigs()
-                .withStatorCurrentLimit(20)
+                .withStatorCurrentLimit(40)
                 .withStatorCurrentLimitEnable(true));
 
     public static final TalonFXConfiguration INTAKE_ROLLERS_CONFIGURATION = new TalonFXConfiguration()
@@ -38,13 +38,10 @@ public class Configs {
                 .withNeutralMode(NeutralModeValue.Coast))
         .withCurrentLimits(
             new CurrentLimitsConfigs()
-                .withStatorCurrentLimit(40)
+                .withStatorCurrentLimit(20)
                 .withStatorCurrentLimitEnable(true)
-                .withSupplyCurrentLimit(35)
-                .withSupplyCurrentLimitEnable(true))
-        .withOpenLoopRamps(
-            new OpenLoopRampsConfigs()
-                .withDutyCycleOpenLoopRampPeriod(0.2));
+                .withSupplyCurrentLimit(20)
+                .withSupplyCurrentLimitEnable(true));
 
     public static final TalonFXConfiguration HOTDOG_FEEDER_CONFIGURATION = new TalonFXConfiguration()
         .withMotorOutput(
@@ -52,13 +49,10 @@ public class Configs {
                 .withNeutralMode(NeutralModeValue.Coast))
         .withCurrentLimits(
             new CurrentLimitsConfigs()
-                .withStatorCurrentLimit(30)
+                .withStatorCurrentLimit(20)
                 .withStatorCurrentLimitEnable(true)
-                .withSupplyCurrentLimit(22)
-                .withSupplyCurrentLimitEnable(true))
-        .withOpenLoopRamps(
-            new OpenLoopRampsConfigs()
-                .withDutyCycleOpenLoopRampPeriod(0.2));;
+                .withSupplyCurrentLimit(20)
+                .withSupplyCurrentLimitEnable(true));
 
     public static final TalonFXConfiguration TOWER_FEEDER_CONFIGURATION = new TalonFXConfiguration()
         .withMotorOutput(
@@ -66,11 +60,8 @@ public class Configs {
                 .withNeutralMode(NeutralModeValue.Coast))
         .withCurrentLimits(
             new CurrentLimitsConfigs()
-                .withStatorCurrentLimit(38)
+                .withStatorCurrentLimit(40)
                 .withStatorCurrentLimitEnable(true)
-                .withSupplyCurrentLimit(28)
-                .withSupplyCurrentLimitEnable(true))
-        .withOpenLoopRamps(
-            new OpenLoopRampsConfigs()
-                .withDutyCycleOpenLoopRampPeriod(0.15));
+                .withSupplyCurrentLimit(30)
+                .withSupplyCurrentLimitEnable(true));
 }

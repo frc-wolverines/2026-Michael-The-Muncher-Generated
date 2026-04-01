@@ -9,6 +9,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -53,6 +54,9 @@ public class Feeder extends SubsystemBase {
     @Override
     public void periodic() {
         updateAlerts();
+        SmartDashboard.putData(this);
+        SmartDashboard.putNumber("Feeder/Hotdog Stator Current", hotdogTalon.getStatorCurrent().getValueAsDouble());
+        SmartDashboard.putNumber("Feeder/Tower Stator Current", towerTalon.getStatorCurrent().getValueAsDouble());
     }
 
     public Command getDutyCycleCommand(Supplier<Double> towerDutyCycle, Supplier<Double> hotdogDutyCycle) {

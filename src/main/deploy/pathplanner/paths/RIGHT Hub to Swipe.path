@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.518025969328704,
-        "y": 2.21
+        "x": 3.5586354961832063,
+        "y": 1.993129770992366
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.044812934027778,
-        "y": 2.856818793402778
+        "x": 1.6339217557251913,
+        "y": 2.2274427480916033
       },
       "isLocked": false,
       "linkedName": "Right Hub Start"
     },
     {
       "anchor": {
-        "x": 4.920451099537038,
-        "y": 2.6279036458333325
+        "x": 4.95614503816794,
+        "y": 2.3194942748091605
       },
       "prevControl": {
-        "x": 4.670451099537038,
-        "y": 2.6279036458333325
+        "x": 4.70614503816794,
+        "y": 2.3194942748091605
       },
       "nextControl": {
-        "x": 5.170451099537038,
-        "y": 2.6279036458333325
+        "x": 5.20614503816794,
+        "y": 2.3194942748091605
       },
       "isLocked": false,
       "linkedName": "Right Bump Setup"
@@ -53,7 +53,7 @@
       },
       "prevControl": {
         "x": 7.481995668738236,
-        "y": 0.750198072274332
+        "y": 0.7501980722743311
       },
       "nextControl": null,
       "isLocked": false,
@@ -80,7 +80,7 @@
       "minWaypointRelativePos": 2.557930258717664,
       "maxWaypointRelativePos": 3.0,
       "constraints": {
-        "maxVelocity": 1.0,
+        "maxVelocity": 0.6,
         "maxAcceleration": 3.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
@@ -92,19 +92,8 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "IntakeStayCollapsed",
-      "waypointRelativePos": 0.0,
-      "endWaypointRelativePos": 0.8408300456810628,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "IntakeStayCollapsed"
-        }
-      }
-    },
-    {
       "name": "IntakeDownIntake",
-      "waypointRelativePos": 2.0,
+      "waypointRelativePos": 0.85,
       "endWaypointRelativePos": 3.0,
       "command": {
         "type": "named",
