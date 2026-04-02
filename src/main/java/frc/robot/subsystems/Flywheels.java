@@ -38,6 +38,7 @@ public class Flywheels extends SubsystemBase {
     leftTalon.getConfigurator().apply(Tunables.FLYWHEEL_SLOT_ZEROS);
     rightTalon = new TalonFX(frc.robot.constants.Map.RIGHT_FLYWHEEL);
     rightTalon.getConfigurator().apply(Tunables.FLYWHEEL_SLOT_ZEROS);
+    setDefaultCommand(velocity(() -> Rotation2d.fromRotations(getVelocityForDistance(0.5))));
   }
 
   @Override
