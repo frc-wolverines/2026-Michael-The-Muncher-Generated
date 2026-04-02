@@ -6,6 +6,7 @@ import java.util.function.Supplier;
 
 import javax.naming.ldap.LdapContext;
 
+ import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -117,7 +118,8 @@ public class Turret extends SubsystemBase {
             SwerveDriveState state = drivetrain.getStateCopy();
             Pose2d robotPose = CustomMath.makePoseAllianceRelative(state.Pose);
             ChassisSpeeds fieldSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(state.Speeds, CustomMath.makePoseAllianceRelative(robotPose).getRotation());
-            newLandmark = newLandmark.minus(new Translation2d(fieldSpeeds.vxMetersPerSecond * 1.55, fieldSpeeds.vyMetersPerSecond * 1.55));
+            double timeOfFlightCompensation = getTimeOfFlight() + (Utils.getCurrentTimeSeconds() - state.Timestamp);
+            newLandmark = newLandmark.minus(new Translation2d(fieldSpeeds.vxMetersPerSecond * timeOfFlightCompensation, fieldSpeeds.vyMetersPerSecond * timeOfFlightCompensation));
             Rotation2d translationAngle = newLandmark.minus(CustomMath.makeTranslationAllianceRelative(robotPose.getTranslation())).getAngle();
             Rotation2d relativeAngle = convertToRelative(translationAngle);
             relativeAngle = relativeAngle.plus(Rotation2d.fromRadians(state.Speeds.omegaRadiansPerSecond * 0.15));
@@ -146,6 +148,14 @@ public class Turret extends SubsystemBase {
 
     public boolean pointedTowardsTarget() {
         return Math.abs(getRotation().minus(currentRelativeTarget).getRotations()) < 0.2;
+    }
+
+    public double getTimeOfFlight() {
+        // Using a quadratic regression based on distance to target to estimate time of flight
+        Drivetrain drivetrain = Drivetrain.getInstance();
+        Pose2d robotPose = CustomMath.makePoseAllianceRelative(drivetrain.getStateCopy().Pose);
+        double distance = robotPose.getTranslation().getDistance(CustomMath.makeTranslationAllianceRelative(currentLandmark));
+        return 1.55;
     }
 
     private static Turret _instance;
