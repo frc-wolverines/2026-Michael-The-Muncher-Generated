@@ -39,32 +39,25 @@ import frc.robot.util.CustomMath;
 public class Turret extends SubsystemBase {
     private final TalonFX turretAzimuth;
     private final PIDController azimuthController = new PIDController(Tunables.TURRET_AZIMUTH_PID_CONSTANTS.kP, Tunables.TURRET_AZIMUTH_PID_CONSTANTS.kI, Tunables.TURRET_AZIMUTH_PID_CONSTANTS.kD);
-    private final DutyCycleEncoder azimuthEncoder;
     public Translation2d currentLandmark = Translation2d.kZero;
     public Rotation2d currentRelativeTarget = Rotation2d.kZero;
-    public Alert encoderMissingAtStartup, encoderMissing, highMotorTemp, criticalMotorTemp;
+    public Alert highMotorTemp, criticalMotorTemp;
 
     public Turret() {
         turretAzimuth = new TalonFX(Map.TURRET_AZIMUTH);
         turretAzimuth.getConfigurator().apply(Configs.TURRET_AZIMUTH_CONFIGURATION);
         turretAzimuth.setPosition(0);
-        azimuthEncoder = new DutyCycleEncoder(1);
 
         setupAlerts();
-        encoderMissingAtStartup.set(!azimuthEncoder.isConnected());
-        turretAzimuth.setPosition(getRotation().getRotations());
-        setDefaultCommand(turnToLandmark(CustomMath.makeTranslationAllianceRelative(FieldConstants.Hub.innerCenterPoint.toTranslation2d())));
+        setDefaultCommand(turnToLandmark(FieldConstants.Hub.innerCenterPoint.toTranslation2d()));
     }
 
     public void setupAlerts() {
-        encoderMissingAtStartup = AlertContainer.getInstance().register(new Alert("TURRET Encoder missing at startup", AlertType.kError));
-        encoderMissing = AlertContainer.getInstance().register(new Alert("TURRET Encoder missing", AlertType.kWarning));
         highMotorTemp = AlertContainer.getInstance().register(new Alert("TURRET Motor has a high tempurature", AlertType.kWarning));
         criticalMotorTemp = AlertContainer.getInstance().register(new Alert("TURRET Motor has a critical tempurature", AlertType.kError));
     }
 
     public void updateAlerts() {
-        encoderMissing.set(!azimuthEncoder.isConnected());
         boolean aboveHighTemp = turretAzimuth.getDeviceTemp().getValueAsDouble() > Constraints.KRAKEN_HIGH_TEMP;
         boolean aboveCriticalTemp = turretAzimuth.getDeviceTemp().getValueAsDouble() > Constraints.KRAKEN_CRITICAL_TEMP;
         highMotorTemp.set(aboveHighTemp && !aboveCriticalTemp);
@@ -76,15 +69,19 @@ public class Turret extends SubsystemBase {
         updateAlerts();
         SmartDashboard.putNumber("Turret/Azimuth Degrees", getRotation().getDegrees());
         SmartDashboard.putNumber("Turret/Azimuth Degrees (rel)", turretAzimuth.getPosition().getValueAsDouble() * 360);
-        SmartDashboard.putNumber("Turret/Azimuth Degrees (abs)", azimuthEncoder.get() * 360);
-        SmartDashboard.putBoolean("Turret/Encoder Connected", azimuthEncoder.isConnected());
         SmartDashboard.putNumber("Turret/Azimuth Field Degrees", getFieldRelativeRotation().getDegrees());
         SmartDashboard.putBoolean("Turret/Aligned", pointedTowardsTarget());
+        SmartDashboard.putNumber("Turret/Target X", currentLandmark.getX());
+        SmartDashboard.putNumber("Turret/Target Y", currentLandmark.getY());
         SmartDashboard.putData(this);
     }
 
+    public Command lock() {
+        return turnToRelativeAngle(Rotation2d.kZero);
+    }
+
     public Rotation2d getRotation() {
-        return Rotation2d.fromRotations(azimuthEncoder.get() - 0.5);
+        return Rotation2d.fromRotations(turretAzimuth.getPosition().getValueAsDouble());
     }
 
     public Command turnToRelativeAngle(Rotation2d angle) {
@@ -113,7 +110,7 @@ public class Turret extends SubsystemBase {
 
     public Command turnToLandmark(Translation2d landmark) {
         return Commands.runEnd(() -> {
-            Translation2d newLandmark = landmark;
+            Translation2d newLandmark = CustomMath.makeTranslationAllianceRelative(landmark);
             Drivetrain drivetrain = Drivetrain.getInstance();
             SwerveDriveState state = drivetrain.getStateCopy();
             Pose2d robotPose = CustomMath.makePoseAllianceRelative(state.Pose);
