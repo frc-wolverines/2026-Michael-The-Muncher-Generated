@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Telemetry;
 import frc.robot.constants.Configs;
@@ -74,6 +75,12 @@ public class Turret extends SubsystemBase {
         SmartDashboard.putNumber("Turret/Target X", currentLandmark.getX());
         SmartDashboard.putNumber("Turret/Target Y", currentLandmark.getY());
         SmartDashboard.putData(this);
+    }
+
+    public Command zeroTurret() {
+        return new InstantCommand(() -> {
+            turretAzimuth.setPosition(0);
+        }, this).withName("Zero Turret").ignoringDisable(true);
     }
 
     public Command lock() {

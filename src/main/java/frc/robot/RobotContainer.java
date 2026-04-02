@@ -6,6 +6,8 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import org.ejml.dense.row.decomposition.hessenberg.TridiagonalDecompositionHouseholderOrig_DDRM;
+
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -25,6 +27,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -58,7 +61,6 @@ public class RobotContainer {
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
     public final CommandXboxController joystick = new CommandXboxController(0);
-    public JoystickAlerts joystickAlerts = JoystickAlerts.getInstance();
     private final CommandXboxController extraDebugJoystick = new CommandXboxController(1);
 
     //CONTROL TRIGGERS
@@ -71,18 +73,6 @@ public class RobotContainer {
 
     private final Trigger overrideFeeder = joystick.x();
 
-    //EVENT TRIGGERS
-    // private final Trigger robotOutsideOfAllianceZone = new Trigger(() -> {
-    //     Drivetrain dt = Drivetrain.getInstance();
-    //     Pose2d pose = CustomMath.makePoseAllianceRelative(dt.getStateCopy().Pose);
-    //     return CustomMath.makePoseAllianceRelative(pose).getTranslation().getX() > FieldConstants.LinesVertical.allianceZone;
-    // });
-    // private final Trigger robotLeftOfCenterline = new Trigger(() -> {
-    //     Drivetrain dt = Drivetrain.getInstance();
-    //     Pose2d pose = dt.getStateCopy().Pose;
-    //     return (CustomMath.makePoseAllianceRelative(pose).getTranslation().getY()) > FieldConstants.LinesHorizontal.center;
-    // });
-
     private final SendableChooser<Boolean> maintananceMode = new SendableChooser<>();
 
     public final Drivetrain drivetrain = Drivetrain.getInstance();
@@ -90,21 +80,15 @@ public class RobotContainer {
     public final Intake intake = Intake.getInstance();
     public final Feeder feeder = Feeder.getInstance();
     public final Flywheels flywheels = Flywheels.getInstance();
-    // public final Lights lights = Lights.getInstance();
-    // public Trigger spunUp = new Trigger(flywheels::spunUp);
 
     private final SendableChooser<Command> autoChooser;
 
     public RobotContainer() {
-        // NamedCommands.registerCommand("IntakeDown", intake.down());
-        // NamedCommands.registerCommand("IntakeIdle", intake.idle());
-        // NamedCommands.registerCommand("IntakeDownIntake", intake.downWithAdvance());
-        // NamedCommands.registerCommand("Shoot", Commands.parallel(
-        //     flywheels.velocityFor(CustomMath.makeTranslationAllianceRelative(FieldConstants.Hub.innerCenterPoint.toTranslation2d())),
-        //     feeder.getDutyCycleCommand(() -> 1.0, () -> 1.0)
-        // ));
-        // NamedCommands.registerCommand("IntakeStayCollapsed", intake.collapse());
-        autoChooser = AutoBuilder.buildAutoChooser("Tests");
+        NamedCommands.registerCommand("Intake", 
+            intake.holdStateWithActiveRollers(-0.65)
+                .beforeStarting(intake.setState(IntakePivotState.DOWN)));
+        NamedCommands.registerCommand("Shoot", shootCommand());
+        autoChooser = AutoBuilder.buildAutoChooser("None");
         SmartDashboard.putData("Auto Mode", autoChooser);
 
         drivetrain.resetRotation(Rotation2d.kZero);
@@ -118,39 +102,35 @@ public class RobotContainer {
 
         SmartDashboard.putData("Maintanance Mode", maintananceMode);
 
-        joystickAlerts.shiftEnding.and(joystickAlerts.ourShift).onTrue(joystickAlerts.shiftEnding(joystick));
-        joystickAlerts.shiftEnding.and(joystickAlerts.ourShift.negate()).onTrue(joystickAlerts.shiftStarting(joystick));
-        joystickAlerts.connected.onTrue(joystickAlerts.connected(joystick));
-
         configureBindings();
 
         FollowPathCommand.warmupCommand().schedule();
     }
 
     private void configureBindings() {
-        // robotOutsideOfAllianceZone.and(robotLeftOfCenterline).whileTrue(turret.turnToLandmark(CustomMath.makeTranslationAllianceRelative(FieldConstants.leftFerrySpot)));
-        // robotOutsideOfAllianceZone.and(robotLeftOfCenterline.negate()).whileTrue(turret.turnToLandmark(CustomMath.makeTranslationAllianceRelative(FieldConstants.rightFerrySpot)));
-        // joystick.y().whileTrue(Commands.parallel(`
-        //     flywheels.velocityFor(FieldConstants.Hub.innerCenterPoint.toTranslation2d()),
-        //     feeder.getDutyCycleCommand(() -> 1.0, () -> 1.0)
-        // ));
-        
+        //INTAKE
         intakeTrigger.whileTrue(
             intake.holdStateWithActiveRollers(-0.65)
                 .beforeStarting(intake.setState(IntakePivotState.DOWN)));
         outtakeTrigger.whileTrue(
             intake.holdStateWithActiveRollers(1).alongWith(feeder.getDutyCycleCommand(() -> -1.0, () -> 1.0))
                 .beforeStarting(intake.setState(IntakePivotState.DOWN)));
-        shootTrigger.whileTrue(
-            intake.holdStateWithActiveRollersSlow(0.0)
-                    .beforeStarting(intake.setState(IntakePivotState.UP)));
         bringUpIntakeTrigger.onTrue(intake.setState(IntakePivotState.UP));
 
-        shootTrigger.or(overrideFeeder).whileTrue(feeder.getDutyCycleCommand(() -> 1.0, () -> -1.0 * (joystick.b().getAsBoolean() ? -1.0 : 1.0)));
+        //TURRET
         joystick.leftStick().toggleOnTrue(turret.lock());
+        joystick.y().onTrue(turret.zeroTurret());
 
-        spinUpTrigger.or(shootTrigger).whileTrue(flywheels.velocityFor(FieldConstants.Hub.innerCenterPoint.toTranslation2d()));
+        //FEEDER
+        overrideFeeder.whileTrue(feeder.getDutyCycleCommand(() -> 1.0, () -> -1.0 * (joystick.a().getAsBoolean() ? -1.0 : 1.0)));
 
+        //FLYWHEELS
+        spinUpTrigger.whileTrue(flywheels.velocityFor(FieldConstants.Hub.innerCenterPoint.toTranslation2d()));
+
+        //COMPOSITE
+        shootTrigger.whileTrue(shootCommand());
+
+        //DRIVETRAIN
         joystick.pov(0).onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
         joystick.rightBumper().onTrue(drivetrain.runOnce(drivetrain::resetCommand));
         setupDrivetrain();
@@ -160,8 +140,8 @@ public class RobotContainer {
     private void setupDrivetrain() {
         drivetrain.setDefaultCommand(
             drivetrain.applyRequest(() ->
-                drive.withVelocityX(-joystick.getLeftY() * MaxSpeed * (shootTrigger.getAsBoolean() || intakeTrigger.getAsBoolean() ? 0.2 : 1)) // Drive forward with negative Y (forward)
-                    .withVelocityY(-joystick.getLeftX() * MaxSpeed * (shootTrigger.getAsBoolean() || intakeTrigger.getAsBoolean() ? 0.2 : 1)) // Drive left with negative X (left)
+                drive.withVelocityX(-joystick.getLeftY() * MaxSpeed * (shootTrigger.getAsBoolean() ? 0.2 : 1)) // Drive forward with negative Y (forward)
+                    .withVelocityY(-joystick.getLeftX() * MaxSpeed * (shootTrigger.getAsBoolean() ? 0.2 : 1)) // Drive left with negative X (left)
                     .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
@@ -172,7 +152,16 @@ public class RobotContainer {
         );
     }
 
+    public Command shootCommand() {
+        return Commands.parallel(
+            flywheels.velocityFor(CustomMath.makeTranslationAllianceRelative(FieldConstants.Hub.innerCenterPoint.toTranslation2d())),
+            feeder.getDutyCycleCommand(() -> 1.0, () -> -1.0),
+            intake.holdStateWithActiveRollersSlow(0.0)
+                    .beforeStarting(intake.setState(IntakePivotState.UP))
+        );
+    }
+
     public Command getAutonomousCommand() {
-        return autoChooser.getSelected();
+        return new WaitCommand(SmartDashboard.getNumber("Autonomous Starting Delay", 0.0)).andThen(autoChooser.getSelected().asProxy());
     }
 }

@@ -1,10 +1,11 @@
 {
-  "robotWidth": 0.9,
-  "robotLength": 0.9,
+  "robotWidth": 0.8382,
+  "robotLength": 0.8382,
   "holonomicMode": true,
   "pathFolders": [
-    "LEFT Hub Start",
-    "RIGHT Hub Start"
+    "RIGHT Bump Start",
+    "LEFT Bump Start",
+    "HUB Start"
   ],
   "autoFolders": [],
   "defaultMaxVel": 3.0,
@@ -34,6 +35,9 @@
   "robotFeatures": [
     "{\"name\":\"Circle\",\"type\":\"circle\",\"data\":{\"center\":{\"x\":-0.275,\"y\":0.0},\"radius\":0.125,\"strokeWidth\":0.02,\"filled\":true}}",
     "{\"name\":\"Rectangle\",\"type\":\"rounded_rect\",\"data\":{\"center\":{\"x\":-0.275,\"y\":0.0},\"size\":{\"width\":0.3,\"length\":0.3},\"borderRadius\":0.05,\"strokeWidth\":0.02,\"filled\":false}}",
-    "{\"name\":\"Line\",\"type\":\"line\",\"data\":{\"start\":{\"x\":-0.05,\"y\":0.25},\"end\":{\"x\":-0.05,\"y\":-0.25},\"strokeWidth\":0.05}}"
+    "{\"name\":\"Line\",\"type\":\"line\",\"data\":{\"start\":{\"x\":0.623,\"y\":0.318},\"end\":{\"x\":0.623,\"y\":-0.318},\"strokeWidth\":0.06}}",
+    "{\"name\":\"Line\",\"type\":\"line\",\"data\":{\"start\":{\"x\":0.623,\"y\":0.318},\"end\":{\"x\":0.3,\"y\":0.318},\"strokeWidth\":0.015}}",
+    "{\"name\":\"Line\",\"type\":\"line\",\"data\":{\"start\":{\"x\":0.623,\"y\":-0.318},\"end\":{\"x\":0.3,\"y\":-0.318},\"strokeWidth\":0.015}}",
+    "{\"name\":\"Line\",\"type\":\"line\",\"data\":{\"start\":{\"x\":0.475,\"y\":-0.318},\"end\":{\"x\":0.475,\"y\":0.318},\"strokeWidth\":0.02}}"
   ]
 }

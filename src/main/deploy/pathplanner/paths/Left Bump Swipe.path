@@ -1,0 +1,139 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 3.46367391481418,
+        "y": 6.508999295256257
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.6929735243045063,
+        "y": 5.74658195891979
+      },
+      "isLocked": true,
+      "linkedName": "Left Bump Start"
+    },
+    {
+      "anchor": {
+        "x": 5.20054246238321,
+        "y": 5.47023039641979
+      },
+      "prevControl": {
+        "x": 4.20054246238321,
+        "y": 5.47023039641979
+      },
+      "nextControl": {
+        "x": 6.200542462383209,
+        "y": 5.47023039641979
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 6.863244574651728,
+        "y": 6.183941767947568
+      },
+      "prevControl": {
+        "x": 6.761563187209599,
+        "y": 5.718271014185993
+      },
+      "nextControl": {
+        "x": 6.964925962093857,
+        "y": 6.649612521709142
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 7.979410951966543,
+        "y": 5.47023039641979
+      },
+      "prevControl": {
+        "x": 8.00632660568514,
+        "y": 6.143706862291721
+      },
+      "nextControl": {
+        "x": 7.969427609684862,
+        "y": 5.220429810197726
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 7.979410951966543,
+        "y": 4.235768229174419
+      },
+      "prevControl": {
+        "x": 8.116835222009325,
+        "y": 5.095842675821588
+      },
+      "nextControl": {
+        "x": 7.862164930554506,
+        "y": 3.501980034729975
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 2.88875535300821,
+        "y": 5.31814518229942
+      },
+      "prevControl": {
+        "x": 7.824701316549877,
+        "y": 5.646001012739235
+      },
+      "nextControl": null,
+      "isLocked": true,
+      "linkedName": "Left Side Shoot"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1.6540707236842107,
+      "rotationDegrees": 0.0
+    },
+    {
+      "waypointRelativePos": 2.959333881578947,
+      "rotationDegrees": -90.0
+    }
+  ],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "Intake",
+      "waypointRelativePos": 0.8,
+      "endWaypointRelativePos": 4.6,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "Intake"
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 135.0
+  },
+  "reversed": false,
+  "folder": "LEFT Bump Start",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": -45.0
+  },
+  "useDefaultConstraints": true
+}
