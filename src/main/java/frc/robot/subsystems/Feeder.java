@@ -7,6 +7,7 @@ import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -18,6 +19,7 @@ import frc.robot.constants.Constraints;
 import frc.robot.constants.Map;
 import frc.robot.util.AlertContainer;
 
+@Logged
 public class Feeder extends SubsystemBase {
     private final TalonFX towerTalon;
     private final TalonFX hotdogTalon;

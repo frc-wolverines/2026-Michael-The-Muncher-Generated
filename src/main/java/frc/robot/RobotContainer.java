@@ -17,6 +17,7 @@ import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.FollowPathCommand;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.jni.WPIMathJNI;
@@ -61,12 +62,13 @@ public class RobotContainer {
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
     public final CommandXboxController joystick = new CommandXboxController(0);
-    private final CommandXboxController extraDebugJoystick = new CommandXboxController(1);
+    public final CommandXboxController extraDebugJoystick = new CommandXboxController(1);
+    private final PIDController rotationController = new PIDController(7.0, 0, 0);
 
     //CONTROL TRIGGERS
     private final Trigger intakeTrigger = new Trigger(() -> joystick.getLeftTriggerAxis() > 0.1);
     private final Trigger outtakeTrigger = new Trigger(joystick.leftBumper());
-    private final Trigger bringUpIntakeTrigger = new Trigger(joystick.rightStick());
+    private final Trigger bringUpIntakeTrigger = new Trigger(joystick.leftStick());
 
     private final Trigger shootTrigger = new Trigger(() -> joystick.getRightTriggerAxis() > 0.9);
     private final Trigger spinUpTrigger = new Trigger(() -> joystick.getRightTriggerAxis() > 0.1).and(shootTrigger.negate());
@@ -87,11 +89,9 @@ public class RobotContainer {
         NamedCommands.registerCommand("Intake", 
             intake.holdStateWithActiveRollers(-0.65)
                 .beforeStarting(intake.setState(IntakePivotState.DOWN)));
-        NamedCommands.registerCommand("Shoot", shootCommand());
+        NamedCommands.registerCommand("Shoot", autoShootCommand());
         autoChooser = AutoBuilder.buildAutoChooser("None");
         SmartDashboard.putData("Auto Mode", autoChooser);
-
-        drivetrain.resetRotation(Rotation2d.kZero);
 
         maintananceMode.addOption("False", false);
         maintananceMode.setDefaultOption("False", false);
@@ -109,40 +109,54 @@ public class RobotContainer {
 
     private void configureBindings() {
         //INTAKE
-        intakeTrigger.whileTrue(
+        intakeTrigger.and(extraDebugJoystick.a().negate()).whileTrue(
             intake.holdStateWithActiveRollers(-0.65)
                 .beforeStarting(intake.setState(IntakePivotState.DOWN)));
         outtakeTrigger.whileTrue(
             intake.holdStateWithActiveRollers(1).alongWith(feeder.getDutyCycleCommand(() -> -1.0, () -> 1.0))
                 .beforeStarting(intake.setState(IntakePivotState.DOWN)));
-        bringUpIntakeTrigger.onTrue(intake.setState(IntakePivotState.UP));
+        bringUpIntakeTrigger.and(extraDebugJoystick.a().negate()).onTrue(intake.setState(IntakePivotState.UP));
 
         //TURRET
-        joystick.leftStick().toggleOnTrue(turret.lock());
-        joystick.y().onTrue(turret.zeroTurret());
+        // joystick.y().onTrue(turret.zeroTurret());
 
         //FEEDER
-        overrideFeeder.whileTrue(feeder.getDutyCycleCommand(() -> 1.0, () -> -1.0 * (joystick.a().getAsBoolean() ? -1.0 : 1.0)));
+        overrideFeeder.and(extraDebugJoystick.a().negate()).whileTrue(feeder.getDutyCycleCommand(() -> 1.0, () -> -1.0 * (joystick.a().getAsBoolean() ? -1.0 : 1.0)));
 
         //FLYWHEELS
-        spinUpTrigger.whileTrue(flywheels.velocityFor(FieldConstants.Hub.innerCenterPoint.toTranslation2d()));
+        // spinUpTrigger.whileTrue(flywheels.velocityFor(FieldConstants.Hub.innerCenterPoint.toTranslation2d()));
 
         //COMPOSITE
-        shootTrigger.whileTrue(shootCommand());
+        shootTrigger.whileTrue(shootFixedVelocityCommand());
+        extraDebugJoystick.rightBumper().whileTrue(shootFixedVelocityBigCommand());
 
         //DRIVETRAIN
         joystick.pov(0).onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
-        joystick.rightBumper().onTrue(drivetrain.runOnce(drivetrain::resetCommand));
+        joystick.rightStick().onTrue(drivetrain.runOnce(drivetrain::resetCommand));
         setupDrivetrain();
         drivetrain.registerTelemetry(logger::telemeterize);
     }
 
     private void setupDrivetrain() {
         drivetrain.setDefaultCommand(
-            drivetrain.applyRequest(() ->
-                drive.withVelocityX(-joystick.getLeftY() * MaxSpeed * (shootTrigger.getAsBoolean() ? 0.2 : 1)) // Drive forward with negative Y (forward)
-                    .withVelocityY(-joystick.getLeftX() * MaxSpeed * (shootTrigger.getAsBoolean() ? 0.2 : 1)) // Drive left with negative X (left)
-                    .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+            drivetrain.applyRequest(() -> {
+                SwerveDriveState state = drivetrain.getState();
+                Pose2d robotPose = CustomMath.makePoseAllianceRelative(state.Pose);
+                Rotation2d translationAngle = CustomMath.makeTranslationAllianceRelative(FieldConstants.Hub.innerCenterPoint.toTranslation2d()).minus(CustomMath.makeTranslationAllianceRelative(robotPose.getTranslation())).getAngle();
+                double rotation = ((-joystick.getRightX() * MaxAngularRate) * 0.65 * (extraDebugJoystick.a().getAsBoolean() ? 0.0 : 1.0)) + (-extraDebugJoystick.getRightX() * MaxAngularRate);
+                if(Math.abs(rotation) < 0.1 && (joystick.a().getAsBoolean())) {
+                    rotation = -rotationController.calculate(robotPose.getRotation().getRotations(), translationAngle.getRotations());
+                }
+
+                double x = -joystick.getLeftY() * MaxSpeed * 0.25 * (extraDebugJoystick.a().getAsBoolean() ? 0.0 : 1.0);
+                double y = -joystick.getLeftX() * MaxSpeed * 0.25 * (extraDebugJoystick.a().getAsBoolean() ? 0.0 : 1.0);
+                x += -extraDebugJoystick.getLeftY() * MaxSpeed;
+                y += -extraDebugJoystick.getLeftX() * MaxSpeed;
+                double rot = rotation;
+                    return drive.withVelocityX(x) // Drive forward with negative Y (forward)
+                        .withVelocityY(y) // Drive left with negative X (left)
+                        .withRotationalRate(rot); // Drive counterclockwise with negative X (left)\
+                }
             )
         );
 
@@ -155,9 +169,42 @@ public class RobotContainer {
     public Command shootCommand() {
         return Commands.parallel(
             flywheels.velocityFor(CustomMath.makeTranslationAllianceRelative(FieldConstants.Hub.innerCenterPoint.toTranslation2d())),
+            feeder.getDutyCycleCommand(() -> 1.0, () -> -1.0)
+        );
+    }
+
+    public Command shootFixedVelocityCommand() {
+        return Commands.parallel(
+            flywheels.velocity(() -> Rotation2d.fromRotations(flywheels.getVelocityForDistance(4))),
+            feeder.getDutyCycleCommand(() -> 1.0, () -> -1.0).beforeStarting(new WaitCommand(1.5)),
+            ((intake.holdStateWithActiveRollers(0.0)
+                .beforeStarting(intake.setState(IntakePivotState.DOWN)))
+                    .withTimeout(0.75).andThen(
+                       (intake.holdStateWithActiveRollers(-0.65)
+                .beforeStarting(intake.setState(IntakePivotState.UP)))
+                    .withTimeout(0.4)).repeatedly())
+        );
+    }
+
+    public Command shootFixedVelocityBigCommand() {
+        return Commands.parallel(
+            flywheels.velocity(() -> Rotation2d.fromRotations(flywheels.getVelocityForDistance(40))),
+            feeder.getDutyCycleCommand(() -> 1.0, () -> -1.0).beforeStarting(new WaitCommand(1.5)),
+            ((intake.holdStateWithActiveRollers(0.0)
+                .beforeStarting(intake.setState(IntakePivotState.DOWN)))
+                    .withTimeout(0.75).andThen(
+                       (intake.holdStateWithActiveRollers(-0.65)
+                .beforeStarting(intake.setState(IntakePivotState.UP)))
+                    .withTimeout(0.4)).repeatedly())
+        );
+    }
+
+    public Command autoShootCommand() {
+        return Commands.parallel(
+            flywheels.velocityFor(CustomMath.makeTranslationAllianceRelative(FieldConstants.Hub.innerCenterPoint.toTranslation2d())),
             feeder.getDutyCycleCommand(() -> 1.0, () -> -1.0),
-            intake.holdStateWithActiveRollersSlow(0.0)
-                    .beforeStarting(intake.setState(IntakePivotState.UP))
+            intake.holdStateWithActiveRollers(0.0)
+                    .beforeStarting(intake.setState(IntakePivotState.UP)).beforeStarting(new WaitCommand(2))
         );
     }
 

@@ -11,8 +11,8 @@ public class Constraints {
     public static final double INTAKE_ENCODER_OFFSET = 0;
     public static final double TURRET_ANTI_ZERO_OFFSET = 0.0;
 
-    public static final Rotation2d TURRET_MIN_ROTATION = Rotation2d.fromDegrees(-135);
-    public static final Rotation2d TURRET_MAX_ROTATION = Rotation2d.fromDegrees(135);
+    public static final Rotation2d TURRET_MIN_ROTATION = Rotation2d.fromDegrees(-90);
+    public static final Rotation2d TURRET_MAX_ROTATION = Rotation2d.fromDegrees(90);
 
     public static final Distance ROBOT_WIDTH = Distance.ofBaseUnits(27, Inches);
     public static final Distance ROBOT_LENGTH = Distance.ofBaseUnits(27, Inches);

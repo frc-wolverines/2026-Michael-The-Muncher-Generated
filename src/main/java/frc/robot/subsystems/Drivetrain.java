@@ -296,7 +296,7 @@ public class Drivetrain extends TunerSwerveDrivetrain implements Subsystem {
     }
 
     public void resetCommand() {
-        resetPose(CustomMath.makePoseAllianceRelative(new Pose2d(new Translation2d(FieldConstants.LinesVertical.starting - Units.inchesToMeters(Constraints.ROBOT_LENGTH.baseUnitMagnitude()/2 - Constraints.BUMPER_THICKNESS.baseUnitMagnitude()), FieldConstants.LinesHorizontal.rightBumpStart + Units.inchesToMeters(Constraints.ROBOT_WIDTH.baseUnitMagnitude()/2 - Constraints.BUMPER_THICKNESS.baseUnitMagnitude())), Rotation2d.k180deg)));
+        resetPose(CustomMath.makePoseAllianceRelative(new Pose2d(new Translation2d(FieldConstants.LinesVertical.starting - Units.inchesToMeters(Constraints.ROBOT_LENGTH.baseUnitMagnitude()/2 - Constraints.BUMPER_THICKNESS.baseUnitMagnitude()), FieldConstants.LinesHorizontal.rightBumpStart + Units.inchesToMeters(Constraints.ROBOT_WIDTH.baseUnitMagnitude()/2 - Constraints.BUMPER_THICKNESS.baseUnitMagnitude())), Rotation2d.kZero)));
     }
 
     private void startSimThread() {

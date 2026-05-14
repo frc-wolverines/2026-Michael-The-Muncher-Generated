@@ -12,6 +12,7 @@ import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -37,6 +38,7 @@ import frc.robot.constants.Tunables;
 import frc.robot.util.AlertContainer;
 import frc.robot.util.CustomMath;
 
+@Logged
 public class Turret extends SubsystemBase {
     private final TalonFX turretAzimuth;
     private final PIDController azimuthController = new PIDController(Tunables.TURRET_AZIMUTH_PID_CONSTANTS.kP, Tunables.TURRET_AZIMUTH_PID_CONSTANTS.kI, Tunables.TURRET_AZIMUTH_PID_CONSTANTS.kD);
@@ -50,7 +52,6 @@ public class Turret extends SubsystemBase {
         turretAzimuth.setPosition(0);
 
         setupAlerts();
-        setDefaultCommand(turnToLandmark(FieldConstants.Hub.innerCenterPoint.toTranslation2d()));
     }
 
     public void setupAlerts() {
@@ -69,9 +70,7 @@ public class Turret extends SubsystemBase {
     public void periodic() {
         updateAlerts();
         SmartDashboard.putNumber("Turret/Azimuth Degrees", getRotation().getDegrees());
-        SmartDashboard.putNumber("Turret/Azimuth Degrees (rel)", turretAzimuth.getPosition().getValueAsDouble() * 360);
         SmartDashboard.putNumber("Turret/Azimuth Field Degrees", getFieldRelativeRotation().getDegrees());
-        SmartDashboard.putBoolean("Turret/Aligned", pointedTowardsTarget());
         SmartDashboard.putNumber("Turret/Target X", currentLandmark.getX());
         SmartDashboard.putNumber("Turret/Target Y", currentLandmark.getY());
         SmartDashboard.putData(this);
@@ -117,13 +116,12 @@ public class Turret extends SubsystemBase {
 
     public Command turnToLandmark(Translation2d landmark) {
         return Commands.runEnd(() -> {
-            Translation2d newLandmark = CustomMath.makeTranslationAllianceRelative(landmark);
+            Translation2d newLandmark = currentLandmark;
             Drivetrain drivetrain = Drivetrain.getInstance();
-            SwerveDriveState state = drivetrain.getStateCopy();
+            SwerveDriveState state = drivetrain.getState();
             Pose2d robotPose = CustomMath.makePoseAllianceRelative(state.Pose);
             ChassisSpeeds fieldSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(state.Speeds, CustomMath.makePoseAllianceRelative(robotPose).getRotation());
-            double timeOfFlightCompensation = getTimeOfFlight() + (Utils.getCurrentTimeSeconds() - state.Timestamp);
-            newLandmark = newLandmark.minus(new Translation2d(fieldSpeeds.vxMetersPerSecond * timeOfFlightCompensation, fieldSpeeds.vyMetersPerSecond * timeOfFlightCompensation));
+            newLandmark = newLandmark.minus(new Translation2d(fieldSpeeds.vxMetersPerSecond * 1.55, fieldSpeeds.vyMetersPerSecond * 1.55));
             Rotation2d translationAngle = newLandmark.minus(CustomMath.makeTranslationAllianceRelative(robotPose.getTranslation())).getAngle();
             Rotation2d relativeAngle = convertToRelative(translationAngle);
             relativeAngle = relativeAngle.plus(Rotation2d.fromRadians(state.Speeds.omegaRadiansPerSecond * 0.15));
@@ -133,7 +131,7 @@ public class Turret extends SubsystemBase {
         }, () -> {
             turretAzimuth.setControl(new NeutralOut());
             currentLandmark = Translation2d.kZero;
-        }, this).beforeStarting(() -> currentLandmark = landmark).withName("Pointing at Landmark");
+        }, this).beforeStarting(() -> currentLandmark = CustomMath.makeTranslationAllianceRelative(landmark)).withName("Turn to Landmark");
     }
 
     public Rotation2d getFieldRelativeRotation() {

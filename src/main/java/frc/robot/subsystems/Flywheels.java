@@ -14,6 +14,7 @@ import com.ctre.phoenix6.controls.VelocityDutyCycle;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -29,6 +30,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.constants.Tunables;
 import frc.robot.util.CustomMath;
 
+@Logged
 public class Flywheels extends SubsystemBase {
   private final TalonFX leftTalon, rightTalon;
   public double cachedDebugVelocity = 0.0;
@@ -36,12 +38,9 @@ public class Flywheels extends SubsystemBase {
   /** Creates a new Flywheels. */
   public Flywheels() {
     leftTalon = new TalonFX(frc.robot.constants.Map.LEFT_FLYWHEEL);
-    leftTalon.getConfigurator().apply(new CurrentLimitsConfigs().withStatorCurrentLimit(40).withStatorCurrentLimitEnable(true));
     leftTalon.getConfigurator().apply(Tunables.FLYWHEEL_SLOT_ZEROS);
     rightTalon = new TalonFX(frc.robot.constants.Map.RIGHT_FLYWHEEL);
-    rightTalon.getConfigurator().apply(new CurrentLimitsConfigs().withStatorCurrentLimit(40).withStatorCurrentLimitEnable(true));
     rightTalon.getConfigurator().apply(Tunables.FLYWHEEL_SLOT_ZEROS);
-    setDefaultCommand(velocity(() -> Rotation2d.fromRotations(getVelocityForDistance(0.5))));
   }
 
   @Override
@@ -86,7 +85,7 @@ public class Flywheels extends SubsystemBase {
               ChassisSpeeds fieldSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(state.Speeds, robotPose.getRotation());
               newLandmark = newLandmark.minus(new Translation2d(fieldSpeeds.vxMetersPerSecond * 1.5, fieldSpeeds.vyMetersPerSecond * 1.5));
               double distance = robotPose.getTranslation().getDistance(newLandmark);
-              double velocity = getVelocityForDistance(distance);
+              double velocity = getVelocityForDistance(distance) * 1.03;
               leftTalon.setControl(new VelocityDutyCycle(velocity));
               rightTalon.setControl(new VelocityDutyCycle(-velocity));
             }, () -> {
